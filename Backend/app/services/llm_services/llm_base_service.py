@@ -1,7 +1,8 @@
 import logging
+import httpx
 from typing import Any
 from app.models.scoring.rubric import Rubric
-from app.models.scoring.responses import CategoryBandDecision, CategoryResult, LLMScoringPayload, ScoringResponse
+from app.models.scoring.responses import CategoryBandDecision, CategoryResult, LLMScoringPayload, ScoringResponse, PenaltyApplied
 from app.models.scoring.requests import ScoringRequest
 from app.models.common.llm_provider import LLMProvider
 from app.models.batch_scoring.responses import BatchScoringResponse
@@ -311,6 +312,25 @@ class LLMBaseService(ABC):
             }
         }
 
+    async def _call_llm_api(self, prompt: str) -> dict[str, Any]:
+        headers = self._build_headers()
+        logger.debug("Prepared headers: keys=%s (Authorization masked)", list(headers.keys()))
+        payload = self._build_payload(prompt)
+        logger.debug("Generation config: temperature=%s, max_tokens=%s, top_p=%s, top_k=%s", self.temperature, self.max_output_tokens, self.top_p, self.top_k)
+
+        async with httpx.AsyncClient(timeout=self.api_timeout) as client:
+            logger.debug("POST %s", self.endpoint_url)
+            response = await client.post(self.endpoint_url, headers=headers, json=payload)
+
+            if response.status_code != 200:
+                logger.error("API request failed: status=%s, body_length=%d", response.status_code, len(response.text) if response.text else 0)
+                raise ValueError(f"API request failed with status {response.status_code}: {response.text}")
+
+            logger.debug("API request succeeded: status=%s", response.status_code)
+            result = response.json()
+            logger.debug("Parsed JSON response; raw_length=%d", len(response.text) if response.text else 0)
+            return result
+
     def _extract_raw_text(self, result: dict[str, Any]) -> str:
         try:
             return result["candidates"][0]["content"]["parts"][0]["text"]
@@ -348,4 +368,29 @@ class LLMBaseService(ABC):
             logger.debug("Applying penalty '%s': points=%s", getattr(penalty, 'code', 'unknown'), penalty.points)
 
         return category_results, total_score
+
+    def _map_penalties(self, llm_payload: LLMScoringPayload) -> list[PenaltyApplied]:
+        return [
+            PenaltyApplied(code=p.code, points=p.points, reason=getattr(p, "reason", None))
+            for p in (llm_payload.penalties_applied or [])
+        ]
+
+    def _clamp_score(self, score: float, minimum: float = 0.0, maximum: float = 10.0) -> float:
+        return max(minimum, min(maximum, score))
+
+    def _build_scoring_response(
+        self,
+        request: ScoringRequest,
+        llm_payload: LLMScoringPayload,
+        category_results: list[CategoryResult],
+        total_score: float,
+    ) -> ScoringResponse:
+        logger.debug("Total score before clamp=%s, final=%s", total_score, self._clamp_score(total_score))
+        return ScoringResponse(
+            category_results=category_results,
+            penalties_applied=self._map_penalties(llm_payload),
+            provider_used=self.provider,
+            feedback=llm_payload.feedback,
+            total_score=self._clamp_score(total_score),
+        )
 

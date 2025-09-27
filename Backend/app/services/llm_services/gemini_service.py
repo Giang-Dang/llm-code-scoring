@@ -31,28 +31,7 @@ class GeminiService(LLMBaseService):
         prompt = self._build_prompt(request)
         logger.debug("Built prompt; length=%d chars", len(prompt))
 
-        headers = self._build_headers()
-        logger.debug("Prepared headers: keys=%s (Authorization masked)", list(headers.keys()))
-
-        payload = self._build_payload(prompt)
-        logger.debug("Generation config: temperature=%s, max_tokens=%s, top_p=%s, top_k=%s", self.temperature, self.max_output_tokens, self.top_p, self.top_k)
-
-        async with httpx.AsyncClient(timeout=self.api_timeout) as client:
-            logger.debug("POST %s", self.endpoint_url)
-            response = await client.post(
-                self.endpoint_url,
-                headers=headers,
-                json=payload
-            )
-
-            if response.status_code != 200:
-                logger.error("API request failed: status=%s, body_length=%d", response.status_code, len(response.text) if response.text else 0)
-                raise ValueError(
-                    f"API request failed with status {response.status_code}: {response.text}")
-
-            logger.debug("API request succeeded: status=%s", response.status_code)
-            result = response.json()
-            logger.debug("Parsed JSON response; raw_length=%d", len(response.text) if response.text else 0)
+        result = await self._call_llm_api(prompt)
 
         # Extract text from response
         raw_response = self._extract_raw_text(result)
@@ -65,19 +44,11 @@ class GeminiService(LLMBaseService):
         # Calculate weighted scores and total
         category_results, total_score = self._score_results(request, llm_payload)
 
-        logger.debug("Total score before clamp=%s, final=%s", total_score, max(0.0, min(10.0, total_score)))
-
-        penalties_applied_response = [
-            PenaltyApplied(code=p.code, points=p.points, reason=getattr(p, "reason", None))
-            for p in (llm_payload.penalties_applied or [])
-        ]
-
-        return ScoringResponse(
+        return self._build_scoring_response(
+            request=request,
+            llm_payload=llm_payload,
             category_results=category_results,
-            penalties_applied=penalties_applied_response,
-            provider_used=self.provider,
-            feedback=llm_payload.feedback,
-            total_score=max(0.0, min(10.0, total_score))  # Clamp between 0-10
+            total_score=total_score,
         )
 
     async def generate_batch_response(self, request: BatchScoringRequest) -> BatchScoringResponse:
