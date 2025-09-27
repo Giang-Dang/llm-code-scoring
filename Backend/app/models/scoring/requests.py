@@ -10,3 +10,4 @@ class ScoringRequest(BaseModel):
     student_code: str
     programming_language: Literal["cpp"] = "cpp"
     rubric: Rubric
+    language: str = "Vietnamese"

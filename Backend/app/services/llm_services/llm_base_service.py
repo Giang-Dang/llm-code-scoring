@@ -157,6 +157,7 @@ class LLMBaseService(ABC):
             .replace("{programming_language}", request.programming_language)
             .replace("{problem_description}", request.problem_description)
             .replace("{student_code}", request.student_code)
+            .replace("{language}", request.language)
         )
         logger.debug("Built prompt; length=%d chars", len(content))
         return content
