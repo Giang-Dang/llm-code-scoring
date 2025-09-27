@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "default": {
+      "format": "%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    },
+    "access": {
+      "format": "%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+      "datefmt": "%Y-%m-%d %H:%M:%S"
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "DEBUG",
+      "formatter": "default"
+    },
+    "file_app": {
+      "class": "logging.handlers.TimedRotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "default",
+      "filename": "logs/app.log",
+      "when": "midnight",
+      "backupCount": 7,
+      "encoding": "utf-8",
+      "delay": true
+    },
+    "file_error": {
+      "class": "logging.handlers.TimedRotatingFileHandler",
+      "level": "ERROR",
+      "formatter": "default",
+      "filename": "logs/error.log",
+      "when": "midnight",
+      "backupCount": 14,
+      "encoding": "utf-8",
+      "delay": true
+    },
+    "file_access": {
+      "class": "logging.handlers.TimedRotatingFileHandler",
+      "level": "DEBUG",
+      "formatter": "access",
+      "filename": "logs/access.log",
+      "when": "midnight",
+      "backupCount": 7,
+      "encoding": "utf-8",
+      "delay": true
+    }
+  },
+  "root": {
+    "level": "DEBUG",
+    "handlers": ["console", "file_app", "file_error"]
+  },
+  "loggers": {
+    "uvicorn": {
+      "level": "DEBUG",
+      "handlers": ["console", "file_app"],
+      "propagate": false
+    },
+    "uvicorn.error": {
+      "level": "DEBUG",
+      "handlers": ["console", "file_app", "file_error"],
+      "propagate": false
+    },
+    "uvicorn.access": {
+      "level": "DEBUG",
+      "handlers": ["console", "file_access"],
+      "propagate": false
+    },
+    "httpx": {
+      "level": "WARNING",
+      "handlers": ["console", "file_app"],
+      "propagate": false
+    },
+    "asyncio": {
+      "level": "WARNING",
+      "handlers": ["console", "file_app"],
+      "propagate": false
+    }
+  }
+}
+
+

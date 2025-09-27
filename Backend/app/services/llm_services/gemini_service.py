@@ -45,7 +45,6 @@ class GeminiService(LLMBaseService):
         category_results, total_score = self._score_results(request, llm_payload)
 
         return self._build_scoring_response(
-            request=request,
             llm_payload=llm_payload,
             category_results=category_results,
             total_score=total_score,

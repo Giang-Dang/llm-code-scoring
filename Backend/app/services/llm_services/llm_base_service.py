@@ -380,7 +380,6 @@ class LLMBaseService(ABC):
 
     def _build_scoring_response(
         self,
-        request: ScoringRequest,
         llm_payload: LLMScoringPayload,
         category_results: list[CategoryResult],
         total_score: float,
