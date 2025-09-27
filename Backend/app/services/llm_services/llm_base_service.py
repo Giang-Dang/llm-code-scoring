@@ -1,16 +1,15 @@
+from app.models.scoring.rubric import Rubric
+from app.models.scoring.responses import LLMScoringPayload, ScoringResponse
+from app.models.scoring.requests import ScoringRequest
+from app.models.common.llm_provider import LLMProvider
+from app.models.batch_scoring.responses import BatchScoringResponse
+from app.models.batch_scoring.requests import BatchScoringRequest
 from abc import abstractmethod
 from os import environ
 import re
 import json
 from dotenv import load_dotenv
 load_dotenv()
-
-from app.models.batch_scoring.requests import BatchScoringRequest
-from app.models.batch_scoring.responses import BatchScoringResponse
-from app.models.common.llm_provider import LLMProvider
-from app.models.scoring.requests import ScoringRequest
-from app.models.scoring.responses import LLMScoringPayload, ScoringResponse
-from app.models.scoring.rubric import Rubric
 
 
 LLM_PROVIDER_URLS: dict[LLMProvider, tuple[str, str]] = {
@@ -40,6 +39,7 @@ LLM_PROVIDER_MODELS: dict[LLMProvider, str] = {
     LLMProvider.OLLAMA:   "OLLAMA_MODEL",
 }
 
+
 class LLMBaseService:
     @property
     @abstractmethod
@@ -55,7 +55,7 @@ class LLMBaseService:
     @abstractmethod
     def top_p(self) -> float:
         return environ.get("TOP_P", 0.90)
-    
+
     @property
     @abstractmethod
     def top_k(self) -> int:
@@ -70,12 +70,12 @@ class LLMBaseService:
     @abstractmethod
     def max_output_tokens(self) -> int:
         return int(environ.get("MAX_OUTPUT_TOKENS", 2000))
-    
+
     @property
     @abstractmethod
     def max_retries(self) -> int:
         return int(environ.get("MAX_RETRIES", 3))
-    
+
     @property
     @abstractmethod
     def base_url(self) -> str:
@@ -93,7 +93,7 @@ class LLMBaseService:
         except KeyError:
             raise NotImplementedError(f"Unsupported provider: {self.provider}")
         return environ.get(env_key)
-    
+
     @property
     @abstractmethod
     def model(self) -> str:
@@ -155,7 +155,8 @@ class LLMBaseService:
         if rubric.penalties:
             parts.append("Penalties:")
             for p in rubric.penalties:
-                parts.append(f'  - code: "{p.code}", points: {p.points}, desc: {p.description}')
+                parts.append(
+                    f'  - code: "{p.code}", points: {p.points}, desc: {p.description}')
 
         return "\n".join(parts)
 
@@ -173,7 +174,8 @@ class LLMBaseService:
         text = response.strip()
 
         # Prefer a fenced JSON block if present
-        fenced = re.search(r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", text, re.IGNORECASE)
+        fenced = re.search(
+            r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", text, re.IGNORECASE)
         candidate = fenced.group(1) if fenced else text
 
         # Extract first top-level JSON object
@@ -191,7 +193,8 @@ class LLMBaseService:
         try:
             data = json.loads(no_trailing_commas)
         except json.JSONDecodeError as e:
-            raise ValueError(f"Failed to parse JSON from LLM response: {e}") from e
+            raise ValueError(
+                f"Failed to parse JSON from LLM response: {e}") from e
 
         try:
             # Pydantic v2 preferred

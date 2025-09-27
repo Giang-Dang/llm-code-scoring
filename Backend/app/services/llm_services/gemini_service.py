@@ -18,12 +18,12 @@ class GeminiService(LLMBaseService):
     async def generate_response(self, request: ScoringRequest) -> ScoringResponse:
         self._validate_request(request)
         prompt = self._build_prompt(request)
-        
+
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"
         }
-        
+
         payload = {
             "contents": [{
                 "role": "user",
@@ -36,39 +36,41 @@ class GeminiService(LLMBaseService):
                 "topK": self.top_k
             }
         }
-        
+
         async with httpx.AsyncClient(timeout=self.api_timeout) as client:
             response = await client.post(
                 f"{self.base_url}/models/{self.model}:generateContent",
                 headers=headers,
                 json=payload
             )
-            
+
             if response.status_code != 200:
-                raise ValueError(f"API request failed with status {response.status_code}: {response.text}")
-            
+                raise ValueError(
+                    f"API request failed with status {response.status_code}: {response.text}")
+
             result = response.json()
-            
+
         # Extract text from response
         try:
             raw_response = result["candidates"][0]["content"]["parts"][0]["text"]
         except (KeyError, IndexError) as e:
             raise ValueError(f"Unexpected API response format: {e}")
-        
+
         # Parse LLM response to structured payload
         llm_payload = self._parse_llm_response(raw_response)
-        
+
         # Calculate weighted scores and total
         total_score = 0.0
         category_results = []
-        
+
         for llm_category in llm_payload.category_results:
             # Find matching category from request to get weight
             category_weight = next(
-                (c.weight for c in request.rubric.categories if c.name == llm_category.category_name), 
+                (c.weight for c in request.rubric.categories if c.name ==
+                    llm_category.category_name),
                 1.0
             )
-            
+
             # Create category result with weight
             from app.models.scoring.responses import CategoryResult, CategoryBandDecision
             category = CategoryResult(
@@ -84,11 +86,11 @@ class GeminiService(LLMBaseService):
             )
             category_results.append(category)
             total_score += llm_category.raw_score * category_weight
-        
+
         # Apply penalties
         for penalty in llm_payload.penalties_applied:
             total_score += penalty.points  # Penalties are negative
-        
+
         return ScoringResponse(
             category_results=category_results,
             penalties_applied=llm_payload.penalties_applied,
@@ -107,7 +109,7 @@ class GeminiService(LLMBaseService):
                 # Log error and continue with remaining requests
                 import logging
                 logging.error(f"Error processing request: {e}")
-        
+
         return BatchScoringResponse(
             results=results,
             total_processed=len(results)
