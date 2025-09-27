@@ -6,10 +6,7 @@ from app.core.logging_config import configure_logging
 from app.api.score import router as score_router
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    configure_logging()
-    logging.getLogger(__name__).info("Application startup: logging configured")
+def log_effective_levels() -> None:
     root_level = logging.getLogger().getEffectiveLevel()
     app_level = logging.getLogger("app").getEffectiveLevel()
     uvicorn_level = logging.getLogger("uvicorn").getEffectiveLevel()
@@ -19,13 +16,25 @@ async def lifespan(app: FastAPI):
         logging.getLevelName(app_level),
         logging.getLevelName(uvicorn_level),
     )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    configure_logging()
+    logging.getLogger(__name__).info("Application startup: logging configured")
+    log_effective_levels()
     yield
     logging.getLogger(__name__).info("Application shutdown")
 
 
-app = FastAPI(lifespan=lifespan)
+def create_app() -> FastAPI:
+    application = FastAPI(lifespan=lifespan)
+    application.include_router(score_router)
+    return application
 
-app.include_router(score_router)
+
+app = create_app()
+
 
 @app.get("/")
 async def root():
