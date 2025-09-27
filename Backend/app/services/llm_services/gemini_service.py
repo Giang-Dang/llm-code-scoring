@@ -23,7 +23,7 @@ class GeminiService(LLMBaseService):
         url = f"{self.base_url}/models/{self.model}:generateContent"
         logger.debug("Resolved endpoint URL: %s", url)
         return url
-
+        
     async def generate_response(self, request: ScoringRequest) -> ScoringResponse:
         logger.debug("generate_response: start for provider=%s", self.provider)
         self._validate_request(request)
@@ -51,23 +51,7 @@ class GeminiService(LLMBaseService):
         )
 
     async def generate_batch_response(self, request: BatchScoringRequest) -> BatchScoringResponse:
-        logger.debug("generate_batch_response: start; request_count=%d", len(request.requests) if hasattr(request, 'requests') and request.requests is not None else 0)
-        results = []
-        for scoring_request in request.requests:
-            try:
-                result = await self.generate_response(scoring_request)
-                results.append(result)
-                logger.debug("Processed one request successfully; running_total=%d", len(results))
-            except Exception as e:
-                # Log error and continue with remaining requests
-                logger.error("Error processing request: %s", e)
-                logger.exception("Error processing request")
-
-        logger.debug("Batch processing complete; total_processed=%d", len(results))
-        return BatchScoringResponse(
-            results=results,
-            total_processed=len(results)
-        )
+        pass
 
     def _build_headers(self) -> dict[str, str]:
         return {

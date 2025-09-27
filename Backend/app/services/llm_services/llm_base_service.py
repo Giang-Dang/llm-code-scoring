@@ -376,8 +376,8 @@ class LLMBaseService(ABC):
             for p in (llm_payload.penalties_applied or [])
         ]
 
-    def _clamp_score(self, score: float, minimum: float = 0.0, maximum: float = 10.0) -> float:
-        return max(minimum, min(maximum, score))
+    def _clamp_score(self, score: float, minimum: float = 0.0, maximum: float = 10.0, precision: int = 2) -> float:
+        return round(max(minimum, min(maximum, score)), precision)
 
     def _build_scoring_response(
         self,
