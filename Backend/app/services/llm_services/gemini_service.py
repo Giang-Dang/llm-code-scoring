@@ -67,14 +67,14 @@ class GeminiService(LLMBaseService):
 
         logger.debug("Total score before clamp=%s, final=%s", total_score, max(0.0, min(10.0, total_score)))
 
-        penalties_applied_api = [
+        penalties_applied_response = [
             PenaltyApplied(code=p.code, points=p.points, reason=getattr(p, "reason", None))
             for p in (llm_payload.penalties_applied or [])
         ]
 
         return ScoringResponse(
             category_results=category_results,
-            penalties_applied=penalties_applied_api,
+            penalties_applied=penalties_applied_response,
             provider_used=self.provider,
             feedback=llm_payload.feedback,
             total_score=max(0.0, min(10.0, total_score))  # Clamp between 0-10
