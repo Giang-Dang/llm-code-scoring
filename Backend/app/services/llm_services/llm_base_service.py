@@ -1,6 +1,7 @@
 import logging
+from typing import Any
 from app.models.scoring.rubric import Rubric
-from app.models.scoring.responses import LLMScoringPayload, ScoringResponse
+from app.models.scoring.responses import CategoryBandDecision, CategoryResult, LLMScoringPayload, ScoringResponse
 from app.models.scoring.requests import ScoringRequest
 from app.models.common.llm_provider import LLMProvider
 from app.models.batch_scoring.responses import BatchScoringResponse
@@ -335,7 +336,7 @@ class LLMBaseService(ABC):
             raise ValueError(f"Unexpected API response format: {e}")
 
     @abstractmethod
-    def _score_results(self, request: ScoringRequest, llm_payload: Any) -> tuple[list[CategoryResult], float]:
+    def _score_results(self, request: ScoringRequest, llm_payload: LLMScoringPayload) -> tuple[list[CategoryResult], float]:
         total_score = 0.0
         category_results: list[CategoryResult] = []
 
