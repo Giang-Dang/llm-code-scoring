@@ -5,7 +5,7 @@ from app.models.batch_scoring.requests import BatchScoringRequest
 from app.models.batch_scoring.responses import BatchScoringResponse
 from app.models.common.llm_provider import LLMProvider
 from app.models.scoring.requests import ScoringRequest
-from app.models.scoring.responses import ScoringResponse, CategoryResult, CategoryBandDecision
+from app.models.scoring.responses import ScoringResponse, PenaltyApplied
 from app.services.llm_services.llm_base_service import LLMBaseService
 
 import logging
@@ -66,9 +66,15 @@ class GeminiService(LLMBaseService):
         category_results, total_score = self._score_results(request, llm_payload)
 
         logger.debug("Total score before clamp=%s, final=%s", total_score, max(0.0, min(10.0, total_score)))
+
+        penalties_applied_api = [
+            PenaltyApplied(code=p.code, points=p.points, reason=getattr(p, "reason", None))
+            for p in (llm_payload.penalties_applied or [])
+        ]
+
         return ScoringResponse(
             category_results=category_results,
-            penalties_applied=llm_payload.penalties_applied,
+            penalties_applied=penalties_applied_api,
             provider_used=self.provider,
             feedback=llm_payload.feedback,
             total_score=max(0.0, min(10.0, total_score))  # Clamp between 0-10
@@ -92,3 +98,14 @@ class GeminiService(LLMBaseService):
             results=results,
             total_processed=len(results)
         )
+
+    def _build_headers(self) -> dict[str, str]:
+        return {
+            "Content-Type": "application/json",
+            "x-goog-api-key": self.api_key or "",
+        }
+
+    def _build_payload(self, prompt: str) -> dict[str, Any]:
+        return {
+            "contents": [{"parts": [{"text": prompt}]}],
+        }

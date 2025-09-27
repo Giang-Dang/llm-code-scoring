@@ -15,7 +15,7 @@ class RubricCategory(BaseModel):
 class PenaltyRule(BaseModel):
     code: str
     description: str
-    points: int
+    points: float
 
 class Rubric(BaseModel):
     categories: List[RubricCategory]

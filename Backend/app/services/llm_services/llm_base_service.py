@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 LLM_PROVIDER_URLS: dict[LLMProvider, tuple[str, str]] = {
     LLMProvider.OPENAI:   ("OPENAI_URL",   "https://api.openai.com/v1/chat/completions"),
-    LLMProvider.GEMINI:   ("GEMINI_URL",   "https://api.gemini.com/v1/chat/completions"),
+    LLMProvider.GEMINI:   ("GEMINI_URL",   "https://generativelanguage.googleapis.com/v1beta"),
     LLMProvider.DEEPSEEK: ("DEEPSEEK_URL", "https://api.deepseek.com/v1/chat/completions"),
     LLMProvider.GROK:     ("GROK_URL",     "https://api.grok.com/v1/chat/completions"),
     LLMProvider.LMSTUDIO: ("LMSTUDIO_URL", "http://localhost:1234/api/generate"),
@@ -51,37 +51,30 @@ class LLMBaseService(ABC):
         raise NotImplementedError
 
     @property
-    @abstractmethod
     def temperature(self) -> float:
-        return environ.get("TEMPERATURE", 0.0)
+        return float(environ.get("TEMPERATURE", 0.0))
 
     @property
-    @abstractmethod
     def top_p(self) -> float:
-        return environ.get("TOP_P", 0.90)
+        return float(environ.get("TOP_P", 0.90))
 
     @property
-    @abstractmethod
     def top_k(self) -> int:
         return int(environ.get("TOP_K", 5))
 
     @property
-    @abstractmethod
     def api_timeout(self) -> int:
         return int(environ.get("API_TIMEOUT", 120))
 
     @property
-    @abstractmethod
     def max_output_tokens(self) -> int:
         return int(environ.get("MAX_OUTPUT_TOKENS", 2000))
 
     @property
-    @abstractmethod
     def max_retries(self) -> int:
         return int(environ.get("MAX_RETRIES", 3))
 
     @property
-    @abstractmethod
     def base_url(self) -> str:
         try:
             env_key, default_url = LLM_PROVIDER_URLS[self.provider]
@@ -99,7 +92,6 @@ class LLMBaseService(ABC):
         raise NotImplementedError
 
     @property
-    @abstractmethod
     def api_key(self) -> str:
         try:
             env_key = LLM_PROVIDER_API_KEYS[self.provider]
@@ -110,11 +102,12 @@ class LLMBaseService(ABC):
         masked = None
         if api_key:
             masked = (f"{api_key[:3]}...{api_key[-3:]}" if len(api_key) > 6 else "***")
+        else:
+            logger.warning("No API key found for provider=%s", self.provider)
         logger.debug("Resolved API key using env var %s; present=%s; masked=%s", env_key, api_key is not None, masked)
         return api_key
 
     @property
-    @abstractmethod
     def model(self) -> str:
         try:
             env_key = LLM_PROVIDER_MODELS[self.provider]
@@ -126,7 +119,6 @@ class LLMBaseService(ABC):
         return model_name
 
     @property
-    @abstractmethod
     def prompt_name(self) -> str:
         return "scoring_prompt.yml"
 
@@ -138,7 +130,6 @@ class LLMBaseService(ABC):
     def generate_batch_response(self, request: BatchScoringRequest) -> BatchScoringResponse:
         raise NotImplementedError
 
-    @abstractmethod
     def _validate_request(self, request: ScoringRequest) -> None:
         logger.debug("Validating scoring request")
         if not request.problem_description:
@@ -155,22 +146,20 @@ class LLMBaseService(ABC):
             raise ValueError("Rubric is required")
         logger.debug("Scoring request validation passed")
 
-    @abstractmethod
     def _build_prompt(self, request: ScoringRequest) -> str:
         prompt_template = self._load_prompt_template()
         logger.debug("Building prompt using template=%s", self.prompt_name)
 
-        content = prompt_template.format(
-            role=self._build_role_constraints_prompt(),
-            rules=self._build_scoring_rules_and_guardrails_prompt(),
-            rubric=self._build_rubric_prompt(request.rubric),
-            programming_language=request.programming_language,
-            student_code=request.student_code,
+        content = (
+            prompt_template
+            .replace("{rubric}", self._build_rubric_prompt(request.rubric))
+            .replace("{programming_language}", request.programming_language)
+            .replace("{problem_description}", request.problem_description)
+            .replace("{student_code}", request.student_code)
         )
         logger.debug("Built prompt; length=%d chars", len(content))
         return content
 
-    @abstractmethod
     def _load_prompt_template(self) -> str:
         path = f"app/prompts/{self.prompt_name}"
         logger.debug("Loading prompt template from %s", path)
@@ -179,7 +168,6 @@ class LLMBaseService(ABC):
         logger.debug("Loaded prompt template; length=%d chars", len(content))
         return content
 
-    @abstractmethod
     def _build_rubric_prompt(self, rubric: Rubric) -> str:
         parts = []
 
@@ -205,7 +193,6 @@ class LLMBaseService(ABC):
         logger.debug("Built rubric prompt; length=%d chars", len(result))
         return result
 
-    @abstractmethod
     def _parse_llm_response(self, response: str) -> LLMScoringPayload:
         """
         Parse a text response from the LLM and return a validated LLMScoringPayload.
@@ -259,7 +246,6 @@ class LLMBaseService(ABC):
             logger.exception("LLM payload validation error")
             raise ValueError(f"LLM payload validation error: {e}") from e
 
-    @abstractmethod
     def _extract_balanced(self, obj_text: str) -> str:
         """
         Extract the first balanced JSON object substring from the input text.
@@ -302,7 +288,6 @@ class LLMBaseService(ABC):
                         return result
         return obj_text
 
-    @abstractmethod
     def _build_headers(self) -> dict[str, str]:
         api_key = self.api_key
         masked = (f"{api_key[:3]}...{api_key[-3:]}" if api_key and len(api_key) > 6 else "***")
@@ -312,7 +297,6 @@ class LLMBaseService(ABC):
             "Authorization": f"Bearer {api_key}",
         }
 
-    @abstractmethod
     def _build_payload(self, prompt: str) -> dict[str, Any]:
         return {
             "contents": [{
@@ -327,7 +311,6 @@ class LLMBaseService(ABC):
             }
         }
 
-    @abstractmethod
     def _extract_raw_text(self, result: dict[str, Any]) -> str:
         try:
             return result["candidates"][0]["content"]["parts"][0]["text"]
@@ -335,7 +318,6 @@ class LLMBaseService(ABC):
             logger.exception("Unexpected API response format when extracting text")
             raise ValueError(f"Unexpected API response format: {e}")
 
-    @abstractmethod
     def _score_results(self, request: ScoringRequest, llm_payload: LLMScoringPayload) -> tuple[list[CategoryResult], float]:
         total_score = 0.0
         category_results: list[CategoryResult] = []
