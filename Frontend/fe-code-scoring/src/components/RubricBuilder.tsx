@@ -16,11 +16,11 @@ export function RubricBuilder() {
   const { rubric } = state;
   const confirm = useConfirm();
   const commonPenalties: Array<{ code: string; description: string; points: number }> = [
-    { code: "io_handling", description: "Thiếu kiểm tra input / sai định dạng I/O", points: -2 },
-    { code: "runtime_error", description: "Lỗi runtime trên input cơ bản", points: -3 },
-    { code: "plagiarism", description: "Sao chép mã / nghi ngờ gian lận", points: -10 },
-    { code: "style_violation", description: "Vi phạm style nghiêm trọng (indent/format)", points: -1 },
-    { code: "no_comments", description: "Thiếu chú thích/docstring tối thiểu", points: -1 },
+    { code: "io_handling", description: "Missing input validation / incorrect I/O format", points: -2 },
+    { code: "runtime_error", description: "Runtime error on basic inputs", points: -3 },
+    { code: "plagiarism", description: "Plagiarism / suspected cheating", points: -10 },
+    { code: "style_violation", description: "Severe style violations (indentation/format)", points: -1 },
+    { code: "no_comments", description: "Missing minimum comments/docstring", points: -1 },
   ];
 
   function addCategory() {
@@ -29,7 +29,7 @@ export function RubricBuilder() {
       name: "New category",
       description: "",
       max_points: 10,
-      weight: 0.5,
+      weight: 0,
       bands: defaultVNbands(),
     };
     dispatch({ type: "rubric/addCategory", category: c });
@@ -63,34 +63,34 @@ export function RubricBuilder() {
       {
         id: generateId("crit"),
         name: "correctness",
-        description: "Điểm từ 0 đến 10, cách nhau 1 điểm",
+        description: "Scores from 0 to 10, in 1-point steps",
         max_points: 10,
-        weight: 0.5,
+        weight: 0,
         bands: [
-          { min_score: 0, max_score: 2, description: "Logic sai hoàn toàn, không có tiến trình rõ ràng để giải quyết vấn đề." },
-          { min_score: 3, max_score: 4, description: "Có ý tưởng nhưng triển khai lộn xộn; thiếu nhiều bước quan trọng." },
-          { min_score: 5, max_score: 6, description: "Logic cơ bản hợp lý; có thể giải quyết được một phần bài toán nhưng còn thiếu/nhầm một vài bước." },
-          { min_score: 7, max_score: 8, description: "Logic rõ ràng, gần đúng hoàn toàn; chỉ còn một số chi tiết nhỏ hoặc edge case bị bỏ sót." },
-          { min_score: 9, max_score: 10, description: "Logic hoàn chỉnh, mạch lạc; thể hiện tư duy giải quyết bài toán từ đầu đến cuối." },
+          { min_score: 0, max_score: 2, description: "Completely incorrect logic; no clear approach to solve the task." },
+          { min_score: 3, max_score: 4, description: "Some ideas present but messy execution; many key steps missing." },
+          { min_score: 5, max_score: 6, description: "Basic logic is reasonable; partially solves the task but misses some steps/cases." },
+          { min_score: 7, max_score: 8, description: "Clear logic, nearly complete; only minor details or edge cases missing." },
+          { min_score: 9, max_score: 10, description: "Fully correct, coherent solution from start to finish." },
         ],
       },
       {
         id: generateId("crit"),
         name: "readability",
-        description: "Điểm từ 0 đến 10, cách nhau 1 điểm",
+        description: "Scores from 0 to 10, in 1-point steps",
         max_points: 10,
-        weight: 0.5,
+        weight: 0,
         bands: [
-          { min_score: 0, max_score: 2, description: "Code rối, không indent chuẩn, khó đọc." },
-          { min_score: 3, max_score: 4, description: "Có format cơ bản nhưng thiếu nhất quán; tên biến/hàm không rõ nghĩa." },
-          { min_score: 5, max_score: 6, description: "Format ổn; tên biến/hàm chấp nhận được; code đọc được nhưng chưa thực sự mạch lạc." },
-          { min_score: 7, max_score: 8, description: "Code rõ ràng; đặt tên biến/hàm hợp lý; có comment/docstring cơ bản; chia nhỏ thành hàm/module ở mức vừa phải." },
-          { min_score: 9, max_score: 10, description: "Code sáng sủa, rất dễ hiểu; tuân theo convention; có docstring/comment hợp lý; cấu trúc tốt, dễ bảo trì và mở rộng." },
+          { min_score: 0, max_score: 2, description: "Messy code, poor indentation, hard to read." },
+          { min_score: 3, max_score: 4, description: "Basic formatting but inconsistent; variable/function names unclear." },
+          { min_score: 5, max_score: 6, description: "Acceptable formatting and naming; readable but not very cohesive." },
+          { min_score: 7, max_score: 8, description: "Clear code; good naming; reasonable comments/docstrings; some structure." },
+          { min_score: 9, max_score: 10, description: "Very clear, easy to follow; follows conventions; good docs; well-structured and maintainable." },
         ],
       },
     ];
     const penalties = [
-      { code: "io_handling", description: "I/O Handling sai", points: -2 },
+      { code: "io_handling", description: "Incorrect I/O handling", points: -2 },
     ];
     dispatch({ type: "rubric/set", rubric: { categories, penalties } });
   }
@@ -104,39 +104,52 @@ export function RubricBuilder() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {rubric.categories.map((c, cIdx) => (
-          <div key={c.id} className="rounded-xl border border-neutral-200 bg-white p-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                className="rounded-lg border border-neutral-300 px-2 py-1 bg-white flex-1"
-                value={c.name}
-                onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { name: e.target.value } })}
-                aria-label="Category name"
-              />
-              <input
-                type="number"
-                min={0}
-                max={10}
-                className="w-20 rounded-lg border border-neutral-300 px-2 py-1 bg-white text-right"
-                value={c.max_points}
-                onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { max_points: clamp(Number(e.target.value), 0, 10) } })}
-                aria-label="Max points"
-                title="Max points"
-              />
-              <input
-                type="number"
-                step="0.05"
-                min={0}
-                max={1}
-                className="w-20 rounded-lg border border-neutral-300 px-2 py-1 bg-white text-right"
-                value={c.weight}
-                onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { weight: clamp(Number(e.target.value), 0, 1) } })}
-                aria-label="Weight"
-                title="Weight"
-              />
-              <div className="flex-1" />
-              <button className="icon-btn" aria-label="Move up" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.max(0, cIdx - 1) })}>↑</button>
-              <button className="icon-btn" aria-label="Move down" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.min(rubric.categories.length - 1, cIdx + 1) })}>↓</button>
-              <button
+          <div key={c.id} className="rounded-xl border border-neutral-200 bg-white p-4 space-y-3">
+            <div className="grid grid-cols-[1fr_140px_140px_auto] items-end gap-3">
+              <div>
+                <label className="block text-xs text-neutral-600 mb-1">Category name</label>
+                <input
+                  className="w-full rounded-lg border border-neutral-300 px-2 py-2 bg-white"
+                  value={c.name}
+                  onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { name: e.target.value } })}
+                  aria-label="Category name"
+                  placeholder="e.g., correctness"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-600 mb-1">Max points (0–10)</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  className="w-full rounded-lg border border-neutral-300 px-2 py-2 bg-white text-right"
+                  value={c.max_points}
+                  onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { max_points: clamp(Number(e.target.value), 0, 10) } })}
+                  aria-label="Max points"
+                  placeholder="10"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-600 mb-1">Weight (0–1)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.05"
+                    min={0}
+                    max={1}
+                    className="w-full rounded-lg border border-neutral-300 px-2 py-2 bg-white text-right"
+                    value={c.weight}
+                    onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { weight: clamp(Number(e.target.value), 0, 1) } })}
+                    aria-label="Weight"
+                    placeholder="0.5"
+                  />
+                  <div className="absolute -bottom-5 left-0 text-xs text-neutral-500">{Math.round(c.weight * 100)}%</div>
+                </div>
+              </div>
+              <div className="justify-self-end flex items-center gap-2">
+                <button className="icon-btn" aria-label="Move up" title="Move up" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.max(0, cIdx - 1) })}>↑</button>
+                <button className="icon-btn" aria-label="Move down" title="Move down" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.min(rubric.categories.length - 1, cIdx + 1) })}>↓</button>
+                <button
                 className="icon-danger"
                 aria-label="Delete category"
                 title="Delete category"
@@ -156,10 +169,16 @@ export function RubricBuilder() {
               >
                 ✕
               </button>
+              </div>
             </div>
-            <div className="text-xs text-neutral-600">Điểm từ 0 đến {c.max_points}, cách nhau 1 điểm</div>
+            <div className="text-xs text-neutral-600">Scores from 0 to {c.max_points}, step 1</div>
 
             <div className="space-y-3">
+              <div className="grid grid-cols-[160px_1fr_36px] items-center gap-3 text-xs text-neutral-500">
+                <div>Score range</div>
+                <div>Description</div>
+                <div></div>
+              </div>
               {c.bands.map((b, i) => (
                 <div key={i} className="grid grid-cols-[160px_1fr_36px] items-start gap-3">
                   <div className="flex items-center gap-2">
@@ -169,7 +188,7 @@ export function RubricBuilder() {
                     <input type="number" className="w-14 rounded-lg border border-neutral-300 px-2 py-1 bg-white text-right" value={b.max_score}
                       onChange={(e) => updateBand(c.id, i, { max_score: Number(e.target.value) })} aria-label="Max score" />
                   </div>
-                  <textarea rows={2} title={b.description} placeholder="Mô tả band (ngắn gọn)…" className="rounded-lg border border-neutral-300 px-2 py-1 bg-white resize-y min-h-[44px]" value={b.description}
+                  <textarea rows={2} title={b.description} placeholder="Band description (brief)…" className="rounded-lg border border-neutral-300 px-2 py-1 bg-white resize-y min-h-[44px]" value={b.description}
                     onChange={(e) => updateBand(c.id, i, { description: e.target.value })} aria-label="Band description" />
                   <button
                     className="icon-danger"
