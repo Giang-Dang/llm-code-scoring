@@ -92,6 +92,12 @@ body {
 .modal-overlay { background: rgba(15, 23, 42, 0.45); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
 .modal-card { box-shadow: 0 24px 60px rgba(2, 6, 23, 0.18); }
 
+/* Smooth progress bar animation */
+.progress-fill {
+  transition: width 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: width;
+}
+
 /* Inputs */
 input[type="text"], input[type="number"], select, textarea {
   outline: none;

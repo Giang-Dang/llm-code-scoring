@@ -27,7 +27,7 @@ function AppContent() {
             <div className="text-sm font-medium">{state.ui.step} / 4</div>
           </div>
           <div className="flex-1 mx-4 h-2 rounded-full bg-neutral-200 overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-teal-500 to-emerald-500" style={{ width: `${(state.ui.step / 4) * 100}%` }} />
+            <div className="h-2 bg-gradient-to-r from-teal-500 to-emerald-500 progress-fill" style={{ width: `${(state.ui.step / 4) * 100}%` }} />
           </div>
           <div className="text-sm text-neutral-600">
             {state.ui.step === 1 && "Define Question"}
