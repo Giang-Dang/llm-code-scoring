@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  color-scheme: light;
+}
+
+/* Remove Tailwind @theme inline to avoid conflicting CSS variables */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* UI helpers */
+.btn-primary {
+  background: linear-gradient(90deg, #0ea5a2, #10b981);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primary:hover { filter: brightness(1.03); }
+.btn-primary:active { transform: translateY(1px); }
+
+.btn-secondary {
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-secondary:hover { box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+
+.icon-btn {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #64748b;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.icon-btn:hover { box-shadow: 0 0 0 3px rgba(14,165,158,0.15); }
+
+/* Utility: clamp long single-line inputs gracefully */
+.truncate-1 { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* Danger buttons */
+.btn-danger {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-danger:hover { filter: brightness(1.03); }
+
+.btn-ghost-danger {
+  background: #fff;
+  color: #b91c1c; /* red-700 */
+  border: 1px solid #fecaca; /* red-200 */
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-ghost-danger:hover { box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+
+/* Compact danger icon button */
+.icon-danger {
+  background: #fff;
+  border: 1px solid #fecaca; /* red-200 */
+  color: #dc2626; /* red-600 */
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-danger:hover { box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+
+/* Modal visuals (SaaS-like) */
+.modal-overlay { background: rgba(15, 23, 42, 0.45); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.modal-card { box-shadow: 0 24px 60px rgba(2, 6, 23, 0.18); }
+
+/* Inputs */
+input[type="text"], input[type="number"], select, textarea {
+  outline: none;
+  color: #111827; /* default light */
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #0ea5a2 !important;
+  box-shadow: 0 0 0 3px rgba(14,165,158,0.15);
+}
+
+label { color: #334155; /* slate-700 */ }
+::placeholder { color: #6b7280; /* gray-500 */ opacity: 1; }
+

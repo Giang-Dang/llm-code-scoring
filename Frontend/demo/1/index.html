@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RubricScore – Code Scoring for Teachers</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="app-header" role="banner">
+    <div class="header-left">
+      <div class="brand" aria-label="RubricScore Home" tabindex="0">RubricScore</div>
+      <nav class="progress" aria-label="Wizard Progress">
+        <button class="progress-step is-active" data-step="1" aria-current="step">1. Question</button>
+        <span class="progress-divider" aria-hidden="true"></span>
+        <button class="progress-step" data-step="2">2. Rubric</button>
+        <span class="progress-divider" aria-hidden="true"></span>
+        <button class="progress-step" data-step="3">3. Code</button>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button id="btn-skip-dashboard" class="btn btn-ghost" title="Skip to Dashboard">Skip to Dashboard</button>
+      <label class="toggle" title="Large font mode">
+        <input id="toggle-large-font" type="checkbox" aria-label="Toggle large font" />
+        <span>Large font</span>
+      </label>
+    </div>
+  </header>
+
+  <main class="wizard" role="main">
+    <!-- Step 1: Define Question -->
+    <section id="step-1" class="step is-visible" aria-labelledby="step1-title">
+      <div class="step-grid">
+        <div class="card">
+          <h2 id="step1-title" class="text-gray-900">Define Question</h2>
+          <div class="form-grid">
+            <label>
+              <span>Assignment Title</span>
+              <input id="question-title" type="text" placeholder="e.g., Two Sum Function" />
+            </label>
+            <label class="full">
+              <span>Problem Statement</span>
+              <textarea id="question-prompt" rows="6" placeholder="Describe the problem, inputs, outputs, and constraints."></textarea>
+            </label>
+            <label>
+              <span>Constraints</span>
+              <input id="question-constraints" type="text" placeholder="e.g., O(n) solution preferred" />
+            </label>
+            <label>
+              <span>Expected Output Format</span>
+              <input id="question-output" type="text" placeholder="e.g., return an integer" />
+            </label>
+          </div>
+          <div class="actions">
+            <button class="btn" id="to-step-2">Next: Rubric →</button>
+          </div>
+        </div>
+        <aside class="card side-preview" aria-live="polite">
+          <h3>Preview: Assignment</h3>
+          <div id="preview-question" class="preview-box"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Step 2: Define Rubric -->
+    <section id="step-2" class="step" aria-labelledby="step2-title" aria-hidden="true">
+      <div class="step-grid">
+        <div class="card">
+          <h2 id="step2-title">Define Rubric</h2>
+          <div class="toolbar">
+            <label class="inline">
+              <span>Templates</span>
+              <select id="rubric-template-select" aria-label="Choose rubric template">
+                <option value="">Choose…</option>
+                <option value="intro">Intro Programming (Correctness/Readability/Docs/Efficiency)</option>
+                <option value="style">Style & Maintainability</option>
+              </select>
+            </label>
+            <button id="btn-apply-template" class="btn btn-ghost">Apply Template</button>
+            <span class="spacer"></span>
+            <button id="btn-save-template" class="btn btn-ghost">Save as Template</button>
+            <button id="btn-load-saved" class="btn btn-ghost">Load Saved</button>
+          </div>
+
+          <div class="rubric-table" role="table" aria-label="Rubric Builder">
+            <div class="rubric-header" role="row">
+              <div role="columnheader">Criterion</div>
+              <div role="columnheader">Description</div>
+              <div role="columnheader" class="num">Points</div>
+              <div role="columnheader" class="num">Weight %</div>
+              <div role="columnheader" class="num">Auto?</div>
+              <div role="columnheader" class="actions-col">Actions</div>
+            </div>
+            <div id="rubric-rows" class="rubric-rows" role="rowgroup"></div>
+          </div>
+
+          <div class="actions">
+            <button id="btn-add-criterion" class="btn">+ Add Criterion</button>
+            <button class="btn" id="to-step-3">Next: Code →</button>
+          </div>
+        </div>
+        <aside class="card side-preview" aria-live="polite">
+          <h3>Preview: Sample Scoring Card</h3>
+          <div id="preview-rubric" class="preview-box"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Step 3: Upload / Paste Code -->
+    <section id="step-3" class="step" aria-labelledby="step3-title" aria-hidden="true">
+      <div class="step-grid">
+        <div class="card">
+          <h2 id="step3-title">Submit Code</h2>
+
+          <div class="tabs" role="tablist">
+            <button class="tab is-active" role="tab" aria-selected="true" data-tab="single">Single</button>
+            <button class="tab" role="tab" data-tab="batch">Batch</button>
+          </div>
+
+          <div id="tab-single" class="tab-panel is-visible" role="tabpanel" aria-label="Single Submission">
+            <div class="form-grid">
+              <label>
+                <span>Student Name</span>
+                <input id="single-name" type="text" placeholder="e.g., Ada Lovelace" />
+              </label>
+              <label>
+                <span>Language</span>
+                <select id="single-language">
+                  <option value="auto">Auto-detect</option>
+                  <option value="python">Python</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="java">Java</option>
+                  <option value="c++">C++</option>
+                </select>
+              </label>
+              <label class="full">
+                <span>Code</span>
+                <textarea id="single-code" rows="10" placeholder="Paste the student's code here…"></textarea>
+              </label>
+            </div>
+            <div class="actions">
+              <button id="btn-add-single" class="btn">Add to Submissions</button>
+              <button id="btn-go-dashboard" class="btn btn-ghost">Go to Dashboard</button>
+            </div>
+          </div>
+
+          <div id="tab-batch" class="tab-panel" role="tabpanel" aria-label="Batch Submission" aria-hidden="true">
+            <div class="batch-grid">
+              <div class="card inline">
+                <h3>Bulk Paste</h3>
+                <p class="muted">Use this format, separated by --- lines:</p>
+                <pre class="example" aria-label="Example format">Name: Ada Lovelace
+Language: python
+<code here>
+---
+Name: Alan Turing
+Language: javascript
+<code here></pre>
+                <textarea id="bulk-paste" rows="12" placeholder="Paste bulk entries here…"></textarea>
+                <div class="actions">
+                  <button id="btn-parse-bulk" class="btn">Parse & Add</button>
+                </div>
+              </div>
+              <div class="card inline">
+                <h3>CSV Upload</h3>
+                <p class="muted">Headers: name,language,code</p>
+                <input id="csv-file" type="file" accept=".csv" />
+                <div class="actions">
+                  <button id="btn-upload-csv" class="btn">Upload CSV</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="card side-preview">
+          <h3>Submissions Preview</h3>
+          <div id="preview-submissions" class="preview-box"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="dashboard" aria-labelledby="dashboard-title" aria-hidden="true">
+      <div class="card">
+        <div class="dash-header">
+          <h2 id="dashboard-title">Grading Dashboard</h2>
+          <div class="dash-actions">
+            <button id="btn-bulk-comment" class="btn btn-ghost">Apply Comment to Selected</button>
+            <button id="btn-export-csv" class="btn">Export CSV</button>
+          </div>
+        </div>
+
+        <div class="dash-table" role="table" aria-label="Student Scores">
+          <div class="dash-header-row" role="row">
+            <div role="columnheader" class="shrink"><input type="checkbox" id="select-all" title="Select all" /></div>
+            <div role="columnheader">Name</div>
+            <div role="columnheader" class="num">Auto Score</div>
+            <div role="columnheader" class="num">Manual Adj.</div>
+            <div role="columnheader" class="num">Final</div>
+            <div role="columnheader" class="actions-col">Actions</div>
+          </div>
+          <div id="dash-rows" role="rowgroup"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Student Report Modal -->
+  <div id="report-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="report-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-header">
+        <h3 id="report-title">Student Report</h3>
+        <button id="report-close" class="icon-btn" aria-label="Close report">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="report-student" class="report-student"></div>
+        <div id="report-chart" class="report-chart" aria-label="Score breakdown chart"></div>
+        <div id="report-rubric" class="report-rubric"></div>
+        <div>
+          <h4>Annotated Code</h4>
+          <pre id="report-code" class="code-view"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="report-done" class="btn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <span class="muted">Demo MVP • Vanilla JS • No data leaves your browser</span>
+  </footer>
+</body>
+</html>
