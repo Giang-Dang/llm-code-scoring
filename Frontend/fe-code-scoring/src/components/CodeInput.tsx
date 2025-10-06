@@ -188,11 +188,10 @@ export function CodeInput() {
               <div>
                 <label className="block text-sm text-neutral-500" htmlFor="single-language">Language</label>
                 <select id="single-language" aria-label="Choose code language" className="w-full mt-1 rounded-lg border border-neutral-300 px-3 py-2 bg-white" value={singleLanguage} onChange={(e) => setSingleLanguage(e.target.value)}>
-                  <option value="auto">Auto-detect</option>
+                  <option value="c++">C++</option>
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript</option>
                   <option value="java">Java</option>
-                  <option value="c++">C++</option>
                 </select>
               </div>
             </div>

@@ -26,12 +26,12 @@ export function Header() {
             value={state.ui.provider}
             onChange={(e) => dispatch({ type: "ui/setProvider", provider: e.target.value as (typeof state.ui.provider) })}
           >
-            <option value="openai">OpenAI</option>
             <option value="gemini">Gemini</option>
-            <option value="deepseek">DeepSeek</option>
-            <option value="grok">Grok</option>
             <option value="lmstudio">LM Studio</option>
-            <option value="ollama">Ollama</option>
+            <option value="deepseek" hidden>DeepSeek</option>
+            <option value="openai" hidden>OpenAI</option>
+            <option value="grok" hidden>Grok</option>
+            <option value="ollama" hidden>Ollama</option>
           </select>
           <label className="text-neutral-800">Output Language</label>
           <select

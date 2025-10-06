@@ -213,9 +213,9 @@ export function RubricBuilder() {
 
       <div className="rounded-xl border border-neutral-200 bg-white p-3 space-y-2">
         <h3 className="font-medium">Penalties</h3>
-        <p className="text-sm text-neutral-600">Tùy chọn. Dùng để trừ điểm cho lỗi chung (không thuộc tiêu chí nào). Sử dụng số âm cho <em>points</em>. Ví dụ: code <code className="px-1 rounded bg-neutral-100">io_handling</code>, description <em>Thiếu kiểm tra input</em>, points <code className="px-1 rounded bg-neutral-100">-2</code>.</p>
+        <p className="text-sm text-neutral-600">Optional. Used to deduct points for common errors (not belonging to any criteria). Use negative numbers for <em>points</em>. Example: code <code className="px-1 rounded bg-neutral-100">io_handling</code>, description <em>Missing input validation</em>, points <code className="px-1 rounded bg-neutral-100">-2</code>.</p>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-neutral-600">Thêm nhanh</label>
+          <label className="text-sm text-neutral-600">Quick add</label>
           <select className="rounded-lg border border-neutral-300 px-2 py-1 bg-white" aria-label="Add common penalty" onChange={(e) => {
             const idx = Number(e.target.value);
             if (!Number.isNaN(idx) && commonPenalties[idx]) {
@@ -238,7 +238,7 @@ export function RubricBuilder() {
                 penalties[idx] = { ...penalties[idx], code: e.target.value };
                 dispatch({ type: "rubric/set", rubric: { ...rubric, penalties } });
               }} aria-label="Penalty code" />
-              <input placeholder="e.g., Thiếu kiểm tra input / sai format" className="rounded-lg border border-neutral-300 px-2 py-1 bg-white" value={p.description} onChange={(e) => {
+              <input placeholder="e.g., Missing input validation / incorrect format" className="rounded-lg border border-neutral-300 px-2 py-1 bg-white" value={p.description} onChange={(e) => {
                 const penalties = rubric.penalties.slice();
                 penalties[idx] = { ...penalties[idx], description: e.target.value };
                 dispatch({ type: "rubric/set", rubric: { ...rubric, penalties } });
