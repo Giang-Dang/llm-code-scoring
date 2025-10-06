@@ -2,6 +2,7 @@ from app.models.common.llm_provider import LLMProvider
 from app.services.llm_services.gemini_service import GeminiService
 from app.services.llm_services.llm_base_service import LLMBaseService
 from app.services.llm_services.lmstudio_service import LMStudioService
+from app.services.llm_services.ollama_service import OllamaService
 
 
 class LLMCommonService:
@@ -11,4 +12,6 @@ class LLMCommonService:
             return GeminiService()
         if provider == LLMProvider.LMSTUDIO:
             return LMStudioService()
+        if provider == LLMProvider.OLLAMA:
+            return OllamaService()
         return None
