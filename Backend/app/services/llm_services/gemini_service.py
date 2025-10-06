@@ -54,12 +54,40 @@ class GeminiService(LLMBaseService):
         pass
 
     def _build_headers(self) -> dict[str, str]:
-        return {
+        headers = {
             "Content-Type": "application/json",
             "x-goog-api-key": self.api_key or "",
         }
+        logger.debug("Built headers; headers=%s", headers)
+        return headers
 
-    def _build_payload(self, prompt: str) -> dict[str, Any]:
-        return {
+    def _build_payload(self, prompt: str, model: str = None) -> dict[str, Any]:
+        payload = {
             "contents": [{"parts": [{"text": prompt}]}],
         }
+        logger.debug("Built payload; payload=%s", payload)
+        return payload
+
+    async def _call_llm_api(self, prompt: str, model: str = None) -> dict[str, Any]:
+        url = self.endpoint_url
+        headers = self._build_headers()
+        payload = self._build_payload(prompt, model)
+        
+        logger.info("Calling Gemini API at %s", url)
+        logger.debug("Request headers: %s", {k: v[:10] + "..." if k == "x-goog-api-key" and len(v) > 10 else v for k, v in headers.items()})
+        logger.debug("Request payload: %s", payload)
+        
+        async with httpx.AsyncClient(timeout=self.api_timeout) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            result = response.json()
+            
+        logger.debug("Received response from Gemini API; status=%d", response.status_code)
+        return result
+
+    def _extract_raw_text(self, result: dict[str, Any]) -> str:
+        try:
+            return result["candidates"][0]["content"]["parts"][0]["text"]
+        except (KeyError, IndexError) as e:
+            logger.exception("Unexpected API response format when extracting text")
+            raise ValueError(f"Unexpected API response format: {e}")

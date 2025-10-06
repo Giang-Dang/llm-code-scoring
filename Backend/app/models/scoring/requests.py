@@ -11,3 +11,4 @@ class ScoringRequest(BaseModel):
     programming_language: Literal["cpp"] = "cpp"
     rubric: Rubric
     language: str = "Vietnamese"
+    model: str

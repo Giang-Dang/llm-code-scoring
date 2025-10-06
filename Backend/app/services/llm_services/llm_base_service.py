@@ -299,45 +299,14 @@ class LLMBaseService(ABC):
             "Authorization": f"Bearer {api_key}",
         }
 
-    def _build_payload(self, prompt: str) -> dict[str, Any]:
-        return {
-            "contents": [{
-                "role": "user",
-                "parts": [{"text": prompt}]
-            }],
-            "generationConfig": {
-                "temperature": self.temperature,
-                "maxOutputTokens": self.max_output_tokens,
-                "topP": self.top_p,
-                "topK": self.top_k
-            }
-        }
+    def _build_payload(self, prompt: str, model: str) -> dict[str, Any]:
+        raise NotImplementedError("Subclasses must implement this method")
 
-    async def _call_llm_api(self, prompt: str) -> dict[str, Any]:
-        headers = self._build_headers()
-        logger.debug("Prepared headers: keys=%s (Authorization masked)", list(headers.keys()))
-        payload = self._build_payload(prompt)
-        logger.debug("Generation config: temperature=%s, max_tokens=%s, top_p=%s, top_k=%s", self.temperature, self.max_output_tokens, self.top_p, self.top_k)
-
-        async with httpx.AsyncClient(timeout=self.api_timeout) as client:
-            logger.debug("POST %s", self.endpoint_url)
-            response = await client.post(self.endpoint_url, headers=headers, json=payload)
-
-            if response.status_code != 200:
-                logger.error("API request failed: status=%s, body_length=%d", response.status_code, len(response.text) if response.text else 0)
-                raise ValueError(f"API request failed with status {response.status_code}: {response.text}")
-
-            logger.debug("API request succeeded: status=%s", response.status_code)
-            result = response.json()
-            logger.debug("Parsed JSON response; raw_length=%d", len(response.text) if response.text else 0)
-            return result
+    def _call_llm_api(self, prompt: str, model: str) -> dict[str, Any]:
+        raise NotImplementedError("Subclasses must implement this method")
 
     def _extract_raw_text(self, result: dict[str, Any]) -> str:
-        try:
-            return result["candidates"][0]["content"]["parts"][0]["text"]
-        except (KeyError, IndexError) as e:
-            logger.exception("Unexpected API response format when extracting text")
-            raise ValueError(f"Unexpected API response format: {e}")
+        raise NotImplementedError("Subclasses must implement this method")
 
     def _score_results(self, request: ScoringRequest, llm_payload: LLMScoringPayload) -> tuple[list[CategoryResult], float]:
         total_score = 0.0

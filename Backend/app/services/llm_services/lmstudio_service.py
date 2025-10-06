@@ -1,4 +1,5 @@
 import logging
+import httpx
 from typing import Any
 
 from app.models.batch_scoring.requests import BatchScoringRequest
@@ -39,7 +40,7 @@ class LMStudioService(LLMBaseService):
         prompt = self._build_prompt(request)
         logger.debug("Built prompt; length=%d chars", len(prompt))
 
-        result = await self._call_llm_api(prompt)
+        result = await self._call_llm_api(prompt, request.model)
 
         # Extract text from response
         raw_response = self._extract_raw_text(result)
@@ -87,10 +88,10 @@ class LMStudioService(LLMBaseService):
             "Content-Type": "application/json",
         }
 
-    def _build_payload(self, prompt: str) -> dict[str, Any]:
+    def _build_payload(self, prompt: str, model: str) -> dict[str, Any]:
         # REST Chat Completions payload
-        return {
-            "model": self.model or "",
+        payload = {
+            "model": model or self.model or "",
             "messages": [
                 {"role": "user", "content": prompt}
             ],
@@ -98,6 +99,9 @@ class LMStudioService(LLMBaseService):
             "max_tokens": self.max_output_tokens,
             "stream": False,
         }
+
+        logger.info("Built payload; payload=%s", payload)
+        return payload
 
     def _extract_raw_text(self, result: dict[str, Any]) -> str:
         # REST Chat Completions shape per LM Studio docs
@@ -112,5 +116,22 @@ class LMStudioService(LLMBaseService):
 
         logger.exception("Unexpected API response format for LM Studio: %s", result)
         raise ValueError("Unexpected API response format for LM Studio")
+
+    async def _call_llm_api(self, prompt: str, model: str) -> dict[str, Any]:
+        url = self.endpoint_url
+        headers = self._build_headers()
+        payload = self._build_payload(prompt, model)
+        
+        logger.info("Calling LM Studio API at %s", url)
+        logger.debug("Request headers: %s", headers)
+        logger.debug("Request payload: %s", payload)
+        
+        async with httpx.AsyncClient(timeout=self.api_timeout) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            result = response.json()
+            
+        logger.debug("Received response from LM Studio API; status=%d", response.status_code)
+        return result
 
 
