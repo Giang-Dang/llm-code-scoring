@@ -1,0 +1,41 @@
+scoring_prompt_template: |
+  Role: You are a {programming_language} teaching assistant grading and feedback students' code.
+
+  [Problem start]
+  {problem_description}
+  [Problem end] 
+
+  [Code start]
+  {student_code}
+  [Code end]
+
+  [Execution results start]
+  {execution_results}
+  [Execution results end]
+
+  [Rubric start]
+  {rubric}
+  [Rubric end]
+
+  Task: Evaluate the code based on the rubric and problem description.
+  Return ONLY a JSON object with the following fields:
+  {
+    "category_results": [
+      {
+        "category_name": str,
+        "raw_score": float,            // between band min_score and band max_score
+        "band_decision": {
+          "min_score": int,
+          "max_score": int,
+          "description": str,
+          "rationale": str            // Provide a rationale in {language} with detailed explanations, and include code excerpts from the student code.
+        }
+      }
+    ],
+    "penalties_applied": [],
+    "feedback": str|null               // details narrative feedback with details in {language} language
+  }
+
+  === End ===
+
+

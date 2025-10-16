@@ -121,7 +121,7 @@ class LLMBaseService(ABC):
 
     @property
     def prompt_name(self) -> str:
-        return "scoring_prompt.yml"
+        return environ.get("PROMPT_NAME", "scoring_prompt.yml")
 
     @abstractmethod
     def generate_response(self, request: ScoringRequest) -> ScoringResponse:
@@ -154,6 +154,7 @@ class LLMBaseService(ABC):
         content = (
             prompt_template
             .replace("{rubric}", self._build_rubric_prompt(request.rubric))
+            .replace("{penalties}", self._build_penalties_prompt(request.rubric))
             .replace("{programming_language}", request.programming_language)
             .replace("{problem_description}", request.problem_description)
             .replace("{student_code}", request.student_code)
@@ -174,8 +175,7 @@ class LLMBaseService(ABC):
         parts = []
 
         categories_count = len(rubric.categories) if rubric and rubric.categories else 0
-        penalties_count = len(rubric.penalties) if rubric and rubric.penalties else 0
-        logger.debug("Building rubric prompt; categories=%d, penalties=%d", categories_count, penalties_count)
+        logger.debug("Building rubric prompt; categories=%d", categories_count)
 
         for category in rubric.categories:
             parts.append(
@@ -185,14 +185,26 @@ class LLMBaseService(ABC):
                 parts.append(
                     f"  - band: [{band.min_score}-{band.max_score}] {band.description}"
                 )
-        if rubric.penalties:
-            parts.append("Penalties:")
-            for p in rubric.penalties:
-                parts.append(
-                    f'  - code: "{p.code}", points: {p.points}, desc: {p.description}')
 
         result = "\n".join(parts)
         logger.debug("Built rubric prompt; length=%d chars", len(result))
+        return result
+
+    def _build_penalties_prompt(self, rubric: Rubric) -> str:
+        parts = []
+
+        penalties_count = len(rubric.penalties) if rubric and rubric.penalties else 0
+        logger.debug("Building penalties prompt; penalties=%d", penalties_count)
+
+        if rubric.penalties:
+            for p in rubric.penalties:
+                parts.append(
+                    f'  - code: "{p.code}", points: {p.points}, desc: {p.description}')
+        else:
+            parts.append("  None")
+
+        result = "\n".join(parts)
+        logger.debug("Built penalties prompt; length=%d chars", len(result))
         return result
 
     def _parse_llm_response(self, response: str) -> LLMScoringPayload:

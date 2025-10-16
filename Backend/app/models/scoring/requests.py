@@ -8,7 +8,7 @@ class ScoringRequest(BaseModel):
     llm_provider: LLMProvider
     problem_description: str
     student_code: str
-    programming_language: Literal["cpp"] = "cpp"
+    programming_language: Literal["cpp", "python", "javascript", "java"] = "cpp"
     rubric: Rubric
     language: str = "Vietnamese"
     model: str
