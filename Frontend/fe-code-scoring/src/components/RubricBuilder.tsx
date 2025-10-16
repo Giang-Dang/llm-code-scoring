@@ -317,7 +317,7 @@ export function RubricBuilder() {
       </div>
 
       {/* Step 2: Penalties Section */}
-      <div className="rounded-2xl border-2 border-neutral-200 bg-white p-6 space-y-4">
+      <div className="rounded-2xl border-2 border-neutral-200 bg-white p-6 space-y-4 hidden">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
             2
