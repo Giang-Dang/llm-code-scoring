@@ -126,20 +126,23 @@ export function ReviewConfirm() {
                 {state.submissions.length} submission{state.submissions.length !== 1 ? "s" : ""} ready for grading
               </div>
               <div className="space-y-2">
-                {state.submissions.slice(0, 5).map((sub) => (
-                  <div key={sub.id} className="flex items-center gap-3 p-3 rounded-lg bg-neutral-50">
-                    <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
+                {[...state.submissions]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .slice(0, 5)
+                  .map((sub) => (
+                    <div key={sub.id} className="flex items-center gap-3 p-3 rounded-lg bg-neutral-50">
+                      <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-neutral-900">{sub.name}</div>
+                        <div className="text-xs text-neutral-600">{sub.language}</div>
+                      </div>
+                      <div className="text-xs text-neutral-500">{sub.code.length} chars</div>
                     </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-neutral-900">{sub.name}</div>
-                      <div className="text-xs text-neutral-600">{sub.language}</div>
-                    </div>
-                    <div className="text-xs text-neutral-500">{sub.code.length} chars</div>
-                  </div>
-                ))}
+                  ))}
                 {state.submissions.length > 5 && (
                   <div className="text-sm text-neutral-500 text-center">
                     +{state.submissions.length - 5} more
