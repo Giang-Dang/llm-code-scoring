@@ -15,7 +15,7 @@ scoring_prompt_template: |
           "min_score": int,
           "max_score": int,
           "description": str,
-          "rationale": str            // Provide a rationale with detailed explanations, and include code excerpts from the student code, in {language}.
+          "rationale": str            // Provide a rationale in {language} with detailed explanations, and include code excerpts from the student code.
         }
       }
     ],
