@@ -35,7 +35,7 @@ export function SingleSubmission({
         return [python()];
       case "javascript":
         return [javascript({ jsx: true, typescript: true })];
-      case "c++":
+      case "cpp":
         return [cpp()];
       case "auto":
       default:
@@ -82,7 +82,7 @@ export function SingleSubmission({
                   value={singleLanguage} 
                   onChange={(e) => onLanguageChange(e.target.value)}
                 >
-                  <option value="c++">C++</option>
+                  <option value="cpp">C++</option>
                   <option value="python">Python</option>
                   <option value="javascript">JavaScript</option>
                   <option value="java">Java</option>

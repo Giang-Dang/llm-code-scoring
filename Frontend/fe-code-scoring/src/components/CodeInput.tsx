@@ -50,7 +50,7 @@ export function CodeInput() {
     if (/(def\s+\w+\(|import\s+\w+|#:)/.test(snippet)) return "python";
     if (/(function\s+\w+\(|=>|console\.log)/.test(snippet)) return "javascript";
     if (/(public\s+class|System\.out\.println|static\s+void\s+main)/i.test(code)) return "java";
-    if (/#include\s+<|std::|int\s+main\s*\(/.test(code)) return "c++";
+    if (/#include\s+<|std::|int\s+main\s*\(/.test(code)) return "cpp";
     return "javascript";
   }
 

@@ -79,7 +79,7 @@ export function BatchUpload({
             value={batchLanguage} 
             onChange={(e) => onLanguageChange(e.target.value)}
           >
-            <option value="c++">C++</option>
+            <option value="cpp">C++</option>
             <option value="python">Python</option>
             <option value="javascript">JavaScript</option>
             <option value="java">Java</option>

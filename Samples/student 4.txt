@@ -1,0 +1,18 @@
+#include <iostream>
+using namespace std;
+
+// Function to calculate the number of ways to climb stairs
+int countWays(int steps) {
+    return steps; 
+}
+
+int main() {
+    int n;
+    cout << "Enter the number of steps: "; // input prompt
+    cin >> n; // read number of steps
+
+    int result = countWays(n); // calculate number of ways
+    cout << "Number of ways to climb: " << result << endl; // print result
+
+    return 0;
+}

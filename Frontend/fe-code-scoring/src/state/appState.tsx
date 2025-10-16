@@ -49,12 +49,40 @@ export type CodeInputState = {
   uploadedFiles: Array<{ name: string; size: number; status: "pending" | "success" | "error" }>;
 };
 
+export type GradingResult = {
+  submissionId: string;
+  status: "pending" | "grading" | "completed" | "error";
+  result?: {
+    category_results: Array<{
+      category_name: string;
+      raw_score: number;
+      weight: number;
+      band_decision: {
+        min_score: number;
+        max_score: number;
+        description: string;
+        rationale: string;
+      };
+    }>;
+    penalties_applied: Array<{
+      code: string;
+      description: string;
+      points: number;
+    }>;
+    provider_used: string;
+    feedback: string;
+    total_score: number;
+  };
+  error?: string;
+};
+
 export type AppState = {
   question: Question;
   rubric: Rubric;
   submissions: Submission[];
   ui: UIState;
   codeInput: CodeInputState;
+  gradingResults: GradingResult[];
 };
 
 export type Action =
@@ -73,17 +101,22 @@ export type Action =
   | { type: "codeInput/setTab"; tab: "single" | "batch" }
   | { type: "codeInput/updateSingle"; update: Partial<CodeInputState["singleSubmission"]> }
   | { type: "codeInput/setBatchLanguage"; language: string }
-  | { type: "codeInput/setUploadedFiles"; files: CodeInputState["uploadedFiles"] };
+  | { type: "codeInput/setUploadedFiles"; files: CodeInputState["uploadedFiles"] }
+  | { type: "grading/initResults"; submissionIds: string[] }
+  | { type: "grading/updateStatus"; submissionId: string; status: GradingResult["status"] }
+  | { type: "grading/setResult"; submissionId: string; result: GradingResult["result"] }
+  | { type: "grading/setError"; submissionId: string; error: string };
 
 const initialState: AppState = {
   question: { title: "", prompt: "", constraints: "", expectedFormat: "" },
   rubric: { categories: [], penalties: [] },
+  gradingResults: [],
   submissions: [],
   ui: { step: 1, model: "gemini-2.0-flash-lite", outputLanguage: "Vietnamese" },
   codeInput: {
     activeTab: "single",
-    singleSubmission: { name: "", language: "c++", code: "" },
-    batchLanguage: "c++",
+    singleSubmission: { name: "", language: "cpp", code: "" },
+    batchLanguage: "cpp",
     uploadedFiles: [],
   },
 };
@@ -133,6 +166,36 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, codeInput: { ...state.codeInput, batchLanguage: action.language } };
     case "codeInput/setUploadedFiles":
       return { ...state, codeInput: { ...state.codeInput, uploadedFiles: action.files } };
+    case "grading/initResults":
+      return {
+        ...state,
+        gradingResults: action.submissionIds.map(id => ({
+          submissionId: id,
+          status: "pending",
+        })),
+      };
+    case "grading/updateStatus": {
+      const gradingResults = state.gradingResults.map(r =>
+        r.submissionId === action.submissionId ? { ...r, status: action.status } : r
+      );
+      return { ...state, gradingResults };
+    }
+    case "grading/setResult": {
+      const gradingResults = state.gradingResults.map(r =>
+        r.submissionId === action.submissionId
+          ? { ...r, status: "completed" as const, result: action.result }
+          : r
+      );
+      return { ...state, gradingResults };
+    }
+    case "grading/setError": {
+      const gradingResults = state.gradingResults.map(r =>
+        r.submissionId === action.submissionId
+          ? { ...r, status: "error" as const, error: action.error }
+          : r
+      );
+      return { ...state, gradingResults };
+    }
     default:
       return state;
   }

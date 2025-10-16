@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppState } from "@/state/appState";
+import { gradeSubmission, isGradingError } from "@/services/gradingService";
 
 export function ReviewConfirm() {
   const { state, dispatch } = useAppState();
@@ -15,6 +16,58 @@ export function ReviewConfirm() {
 
   const totalWeight = state.rubric.categories.reduce((sum, cat) => sum + cat.weight, 0);
   const isWeightValid = Math.abs(totalWeight - 1) < 0.01;
+
+  const handleStartGrading = () => {
+    if (state.submissions.length === 0 || state.rubric.categories.length === 0 || !isWeightValid) {
+      return;
+    }
+
+    // Initialize grading results for all submissions
+    const submissionIds = state.submissions.map(s => s.id);
+    dispatch({ type: "grading/initResults", submissionIds });
+
+    // Navigate to Results page immediately
+    dispatch({ type: "ui/setStep", step: 6 });
+
+    // Start grading in background
+    state.submissions.forEach(async (submission) => {
+      try {
+        // Update status to grading
+        dispatch({ type: "grading/updateStatus", submissionId: submission.id, status: "grading" });
+
+        const result = await gradeSubmission(
+          submission,
+          state.question.prompt,
+          state.rubric,
+          {
+            model: state.ui.model,
+            llmProvider: "gemini",
+            outputLanguage: state.ui.outputLanguage,
+          }
+        );
+
+        if (isGradingError(result)) {
+          dispatch({
+            type: "grading/setError",
+            submissionId: submission.id,
+            error: result.detail || result.error,
+          });
+        } else {
+          dispatch({
+            type: "grading/setResult",
+            submissionId: submission.id,
+            result,
+          });
+        }
+      } catch (error) {
+        dispatch({
+          type: "grading/setError",
+          submissionId: submission.id,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+    });
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -216,11 +269,11 @@ export function ReviewConfirm() {
           Back to Settings
         </button>
         <button
-          className="btn-primary flex items-center gap-2 px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={() => dispatch({ type: "ui/setStep", step: 6 })}
+          className="btn-primary flex items-center gap-2 px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handleStartGrading}
           disabled={state.submissions.length === 0 || state.rubric.categories.length === 0 || !isWeightValid}
         >
-          Start Grading
+          <span>Start Grading</span>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>

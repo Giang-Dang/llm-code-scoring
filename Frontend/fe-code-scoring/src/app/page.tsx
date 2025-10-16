@@ -6,7 +6,7 @@ import { RubricBuilder } from "@/components/RubricBuilder";
 import { CodeInput } from "@/components/CodeInput";
 import { GradingSettings } from "@/components/GradingSettings";
 import { ReviewConfirm } from "@/components/ReviewConfirm";
-import { Dashboard } from "@/components/Dashboard";
+import { Results } from "@/components/Results";
 import { AppStateProvider, useAppState } from "@/state/appState";
 
 export default function Home() {
@@ -37,7 +37,7 @@ function AppContent() {
             {state.ui.step === 3 && "Submit Code"}
             {state.ui.step === 4 && "Grading Settings"}
             {state.ui.step === 5 && "Review & Confirm"}
-            {state.ui.step === 6 && "Grading Dashboard"}
+            {state.ui.step === 6 && "Results"}
           </div>
         </div>
         {state.ui.step === 1 && (
@@ -82,9 +82,7 @@ function AppContent() {
         )}
         {state.ui.step === 6 && (
           <section className="space-y-3">
-            <div className="rounded-xl border border-neutral-200 bg-white p-4">
-              <Dashboard />
-            </div>
+            <Results />
           </section>
         )}
       </main>

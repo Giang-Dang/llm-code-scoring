@@ -29,7 +29,7 @@ export function Header() {
     { id: 3, label: "Code", isValid: isStep1Valid() && isStep2Valid() },
     { id: 4, label: "Settings", isValid: isStep1Valid() && isStep2Valid() && isStep3Valid() },
     { id: 5, label: "Review", isValid: isStep1Valid() && isStep2Valid() && isStep3Valid() },
-    { id: 6, label: "Dashboard", isValid: isStep1Valid() && isStep2Valid() && isStep3Valid() },
+    { id: 6, label: "Results Dashboard", isValid: isStep1Valid() && isStep2Valid() && isStep3Valid() },
   ];
   const handleStepSelect = async (id: number) => {
     const targetStep = steps.find(s => s.id === id);

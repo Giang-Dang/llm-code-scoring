@@ -12,31 +12,26 @@ export function QuestionForm() {
     dispatch({
       type: "question/update",
       update: {
-        title: "Valid anagram",
-        prompt: `Write a program in C++ that reads two strings from input and determines whether they are anagrams of each other. Two strings are anagrams if one can be formed by rearranging the letters of the other, using all the original letters exactly once. The program should output true if the second string is an anagram of the first, and false otherwise.
+        title: "Day of the year",
+        prompt: `Write a program in C++ that reads a date string from input and outputs the day number of the year. The input date will be given in the Gregorian calendar and formatted as YYYY-MM-DD.  
 
-Input: Two lines, each containing a string s and t.
-Output: A single word: true if t is an anagram of s, otherwise false.
+Input: A single line containing a date string in the format YYYY-MM-DD.  
+Output: An integer representing the day number of the year.  
 
 Example 1:
-Input:
-anagram
-nagaram
-Output:
-true
+Input: 2019-01-09  
+Output: 9  
 
-Example 2:
-Input:
-rat
-car
-Output:
-false
+Example 2 :
+Input: 2019-02-10  
+Output: 41  
 
 Constraints:
-1 <= s.length, t.length <= 5 * 10^2
-Both strings consist of lowercase English letters.`,
-        constraints: "Inputs are 0 ≤ a,b ≤ 1e9. Prefer O(log min(a,b)).",
-        expectedFormat: "Return an integer (the GCD)",
+- The input string has length 10.  
+- date[4] == date[7] == '-', and all other characters are digits.  
+- The date represents a valid Gregorian calendar date between Jan 1st, 1900 and Dec 31st, 2019. `,
+        constraints: "",
+        expectedFormat: "",
       },
     });
   }

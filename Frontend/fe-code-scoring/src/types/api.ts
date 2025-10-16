@@ -85,4 +85,11 @@ export type ScoringResponse = {
   total_score: number; // 0..10
 };
 
+export type Submission = {
+  id: string;
+  name: string;
+  language: string;
+  code: string;
+};
+
 
