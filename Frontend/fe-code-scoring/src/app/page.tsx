@@ -88,7 +88,7 @@ function AppContent() {
           </section>
         )}
       </main>
-      <footer className="px-4 py-6 text-center text-neutral-500">Demo MVP • React + Next.js • Teachers’ Code Scoring</footer>
+      <footer className="px-4 py-6 text-center text-neutral-500">LLM Code Scoring</footer>
     </div>
   );
 }
