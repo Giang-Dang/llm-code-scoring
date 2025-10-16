@@ -68,11 +68,11 @@ export function RubricBuilder() {
         max_points: 10,
         weight: 0.8,
         bands: [
-          { min_score: 0, max_score: 2, description: "Completely incorrect logic; no clear approach to solve the task." },
-          { min_score: 3, max_score: 4, description: "Some ideas present but messy execution; many key steps missing." },
-          { min_score: 5, max_score: 6, description: "Basic logic is reasonable; partially solves the task but misses some steps/cases." },
-          { min_score: 7, max_score: 8, description: "Clear logic, nearly complete; only minor details or edge cases missing." },
-          { min_score: 9, max_score: 10, description: "Fully correct, coherent solution from start to finish." },
+          { min_score: 0, max_score: 2, description: "Logic sai hoàn toàn, không có tiến trình rõ ràng để giải quyết vấn đề." },
+          { min_score: 3, max_score: 4, description: "Có ý tưởng nhưng triển khai lộn xộn; thiếu nhiều bước quan trọng." },
+          { min_score: 5, max_score: 6, description: "Logic cơ bản hợp lý; có thể giải quyết được một phần bài toán nhưng còn thiếu/nhầm một vài bước." },
+          { min_score: 7, max_score: 8, description: "Logic rõ ràng, gần đúng hoàn toàn; chỉ còn một số chi tiết nhỏ hoặc edge case bị bỏ sót." },
+          { min_score: 9, max_score: 10, description: "Logic hoàn chỉnh, mạch lạc; thể hiện rõ tư duy giải quyết bài toán từ đầu đến cuối." },
         ],
       },
       {
@@ -82,11 +82,11 @@ export function RubricBuilder() {
         max_points: 10,
         weight: 0.2,
         bands: [
-          { min_score: 0, max_score: 2, description: "Messy code, poor indentation, hard to read." },
-          { min_score: 3, max_score: 4, description: "Basic formatting but inconsistent; variable/function names unclear." },
-          { min_score: 5, max_score: 6, description: "Acceptable formatting and naming; readable but not very cohesive." },
-          { min_score: 7, max_score: 8, description: "Clear code; good naming; reasonable comments/docstrings; some structure." },
-          { min_score: 9, max_score: 10, description: "Very clear, easy to follow; follows conventions; good docs; well-structured and maintainable." },
+          { min_score: 0, max_score: 2, description: "Code rối, không indent chuẩn, khó đọc." },
+          { min_score: 3, max_score: 4, description: "Có format cơ bản nhưng thiếu nhất quán; tên biến/hàm không rõ nghĩa." },
+          { min_score: 5, max_score: 6, description: "Format ổn; tên biến/hàm chấp nhận được; code đọc được nhưng chưa thực sự mạch lạc" },
+          { min_score: 7, max_score: 8, description: "Code rõ ràng; đặt tên biến/hàm hợp lý; có comment/docstring cơ bản; chia nhỏ thành hàm/module ở mức vừa phải." },
+          { min_score: 9, max_score: 10, description: "Code sáng sủa, rất dễ hiểu; tuân theo coding convention (naming, indentation); có docstring, comment hợp lý; cấu trúc tốt (chia module, hàm rõ ràng); dễ bảo trì và mở rộng." },
         ],
       },
     ];
