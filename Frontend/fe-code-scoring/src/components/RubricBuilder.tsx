@@ -207,7 +207,7 @@ export function RubricBuilder() {
             {/* Category Cards */}
             <div className="space-y-3">
               {rubric.categories.map((c, cIdx) => (
-            <div key={c.id} className="rounded-xl border-2 border-neutral-200 bg-white hover:border-teal-300 transition-colors">
+            <div key={c.id} className="rounded-xl border-2 border-neutral-200 bg-white hover:border-teal-300 transition-colors overflow-hidden">
               {/* Compact Header */}
               <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-neutral-50 to-white">
                 <div className="flex-1 min-w-0">
@@ -275,7 +275,7 @@ export function RubricBuilder() {
                 </div>
               </div>
 
-            <div className="space-y-3">
+            <div className="p-4 space-y-3">
               <div className="grid grid-cols-[160px_1fr_36px] items-center gap-3 text-xs text-neutral-500">
                 <div>Score range</div>
                 <div>Description</div>
