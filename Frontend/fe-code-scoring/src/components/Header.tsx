@@ -9,14 +9,16 @@ export function Header() {
     { id: 1, label: "Question" },
     { id: 2, label: "Rubric" },
     { id: 3, label: "Code" },
-    { id: 4, label: "Dashboard" },
+    { id: 4, label: "Settings" },
+    { id: 5, label: "Review" },
+    { id: 6, label: "Dashboard" },
   ];
   return (
     <header className="sticky top-0 z-10 border-b bg-white/70 backdrop-blur">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">RubricScore</div>
-          <Stepper steps={steps} active={state.ui.step} onSelect={(id) => dispatch({ type: "ui/setStep", step: id as 1 | 2 | 3 | 4 })} />
+          <Stepper steps={steps} active={state.ui.step} onSelect={(id) => dispatch({ type: "ui/setStep", step: id as 1 | 2 | 3 | 4 | 5 | 6 })} />
         </div>
         <div className="flex items-center gap-4 text-sm">
           {/* <div className="hidden md:flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-1.5 text-neutral-700">

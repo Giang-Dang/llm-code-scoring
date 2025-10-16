@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useReducer } from "react";
-import type { LLMProvider, Rubric, RubricCategory } from "@/types/api";
+import type { LlmModelName, Rubric, RubricCategory } from "@/types/api";
 
 export type Question = {
   title: string;
@@ -33,8 +33,8 @@ export type Submission = {
 };
 
 export type UIState = {
-  step: 1 | 2 | 3 | 4; // 4 = dashboard
-  provider: LLMProvider;
+  step: 1 | 2 | 3 | 4 | 5 | 6; // 6 = dashboard
+  model: LlmModelName;
   outputLanguage: string; // e.g., Vietnamese, English
 };
 
@@ -59,7 +59,7 @@ export type AppState = {
 
 export type Action =
   | { type: "ui/setStep"; step: UIState["step"] }
-  | { type: "ui/setProvider"; provider: LLMProvider }
+  | { type: "ui/setModel"; model: LlmModelName }
   | { type: "ui/setOutputLanguage"; value: string }
   | { type: "question/update"; update: Partial<Question> }
   | { type: "rubric/set"; rubric: Rubric }
@@ -79,7 +79,7 @@ const initialState: AppState = {
   question: { title: "", prompt: "", constraints: "", expectedFormat: "" },
   rubric: { categories: [], penalties: [] },
   submissions: [],
-  ui: { step: 1, provider: "gemini", outputLanguage: "Vietnamese" },
+  ui: { step: 1, model: "gemini-2.0-flash-lite", outputLanguage: "Vietnamese" },
   codeInput: {
     activeTab: "single",
     singleSubmission: { name: "", language: "c++", code: "" },
@@ -92,8 +92,8 @@ function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case "ui/setStep":
       return { ...state, ui: { ...state.ui, step: action.step } };
-    case "ui/setProvider":
-      return { ...state, ui: { ...state.ui, provider: action.provider } };
+    case "ui/setModel":
+      return { ...state, ui: { ...state.ui, model: action.model } };
     case "ui/setOutputLanguage":
       return { ...state, ui: { ...state.ui, outputLanguage: action.value } };
     case "question/update":

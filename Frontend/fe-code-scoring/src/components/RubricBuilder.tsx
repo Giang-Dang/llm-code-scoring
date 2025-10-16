@@ -2,8 +2,8 @@
 
 import { useAppState } from "@/state/appState";
 import { useConfirm } from "@/components/Confirm";
+import { useAlert } from "./Alert";
 import type { RubricBand, RubricCategory } from "@/types/api";
-// no-op
 
 function generateId(prefix: string) {
   const randomSuffix = Math.random().toString(36).slice(2, 8);
@@ -15,6 +15,7 @@ export function RubricBuilder() {
   const { state, dispatch } = useAppState();
   const { rubric } = state;
   const confirm = useConfirm();
+  const alertModal = useAlert();
   const commonPenalties: Array<{ code: string; description: string; points: number }> = [
     { code: "io_handling", description: "Missing input validation / incorrect I/O format", points: -2 },
     { code: "runtime_error", description: "Runtime error on basic inputs", points: -3 },
@@ -65,7 +66,7 @@ export function RubricBuilder() {
         name: "correctness",
         description: "Scores from 0 to 10, in 1-point steps",
         max_points: 10,
-        weight: 0,
+        weight: 0.8,
         bands: [
           { min_score: 0, max_score: 2, description: "Completely incorrect logic; no clear approach to solve the task." },
           { min_score: 3, max_score: 4, description: "Some ideas present but messy execution; many key steps missing." },
@@ -79,7 +80,7 @@ export function RubricBuilder() {
         name: "readability",
         description: "Scores from 0 to 10, in 1-point steps",
         max_points: 10,
-        weight: 0,
+        weight: 0.2,
         bands: [
           { min_score: 0, max_score: 2, description: "Messy code, poor indentation, hard to read." },
           { min_score: 3, max_score: 4, description: "Basic formatting but inconsistent; variable/function names unclear." },
@@ -95,83 +96,184 @@ export function RubricBuilder() {
     dispatch({ type: "rubric/set", rubric: { categories, penalties } });
   }
 
+  const totalWeight = rubric.categories.reduce((sum, cat) => sum + cat.weight, 0);
+  const isWeightValid = Math.abs(totalWeight - 1) < 0.01;
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <button className="btn-secondary" onClick={applyVNSample}>Sample (Correctness + Readability)</button>
-        <button className="btn-secondary" onClick={addCategory}>+ Add Category</button>
+    <div className="space-y-6">
+      {/* Header with Instructions */}
+      <div className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center flex-shrink-0">
+            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-blue-900 mb-2">How to Build Your Rubric</h3>
+            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+              <li><strong>Add Categories</strong> - Define grading criteria (e.g., Correctness, Readability)</li>
+              <li><strong>Set Weights</strong> - Ensure weights sum to 1.0 (100%)</li>
+              <li><strong>Add Penalties</strong> - Optional deductions for common errors</li>
+            </ol>
+            <div className="mt-3 flex items-center gap-2">
+              <button className="btn-secondary text-sm" onClick={applyVNSample}>
+                <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Load Sample Rubric
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {rubric.categories.map((c, cIdx) => (
-          <div key={c.id} className="rounded-xl border border-neutral-200 bg-white p-4 space-y-3">
-            <div className="grid grid-cols-[1fr_140px_140px_auto] items-end gap-3">
-              <div>
-                <label className="block text-xs text-neutral-600 mb-1">Category name</label>
-                <input
-                  className="w-full rounded-lg border border-neutral-300 px-2 py-2 bg-white"
-                  value={c.name}
-                  onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { name: e.target.value } })}
-                  aria-label="Category name"
-                  placeholder="e.g., correctness"
-                />
+      {/* Step 1: Categories Section */}
+      <div className="rounded-2xl border-2 border-neutral-200 bg-white p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
+              1
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-neutral-900">Grading Categories</h3>
+              <p className="text-sm text-neutral-600">Define what aspects you&apos;ll evaluate</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {rubric.categories.length > 0 && (
+              <div className={`text-sm font-semibold px-3 py-1.5 rounded-lg ${
+                isWeightValid 
+                  ? "bg-green-100 text-green-700" 
+                  : "bg-amber-100 text-amber-700"
+              }`}>
+                {isWeightValid ? "✓ Weights: 100%" : `⚠ Weights: ${(totalWeight * 100).toFixed(0)}%`}
               </div>
-              <div>
-                <label className="block text-xs text-neutral-600 mb-1">Max points (0–10)</label>
-                <input
-                  type="number"
-                  min={0}
-                  max={10}
-                  className="w-full rounded-lg border border-neutral-300 px-2 py-2 bg-white text-right"
-                  value={c.max_points}
-                  onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { max_points: clamp(Number(e.target.value), 0, 10) } })}
-                  aria-label="Max points"
-                  placeholder="10"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-600 mb-1">Weight (0–1)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    step="0.05"
-                    min={0}
-                    max={1}
-                    className="w-full rounded-lg border border-neutral-300 px-2 py-2 bg-white text-right"
-                    value={c.weight}
-                    onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { weight: clamp(Number(e.target.value), 0, 1) } })}
-                    aria-label="Weight"
-                    placeholder="0.5"
-                  />
-                  <div className="absolute -bottom-5 left-0 text-xs text-neutral-500">{Math.round(c.weight * 100)}%</div>
+            )}
+            <button className="btn-primary" onClick={addCategory}>
+              <svg className="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Category
+            </button>
+          </div>
+        </div>
+
+        {rubric.categories.length === 0 ? (
+          <div className="text-center py-12 border-2 border-dashed border-neutral-300 rounded-xl">
+            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h4 className="text-lg font-semibold text-neutral-700 mb-2">No categories yet</h4>
+            <p className="text-neutral-600 mb-4">Click &quot;Add Category&quot; to create your first grading criterion</p>
+            <button className="btn-primary" onClick={addCategory}>
+              <svg className="w-5 h-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add Your First Category
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Quick Overview Summary */}
+            <div className="rounded-xl bg-gradient-to-r from-teal-50 to-emerald-50 border-2 border-teal-200 p-5">
+              <div className="flex items-stretch gap-6">
+                {/* Total Count */}
+                <div className="flex flex-col justify-center">
+                  <div className="text-xs font-bold text-teal-700 uppercase tracking-wide mb-1">Total Categories</div>
+                  <div className="text-4xl font-bold text-teal-900">{rubric.categories.length}</div>
+                </div>
+                
+                {/* Divider */}
+                <div className="w-px bg-teal-300 self-stretch"></div>
+                
+                {/* Weight Distribution */}
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="text-xs font-bold text-teal-700 uppercase tracking-wide mb-2.5">Weight Distribution</div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    {rubric.categories.map((cat) => (
+                      <div key={cat.id} className="flex items-center gap-2.5 bg-white rounded-lg px-3.5 py-2 border-2 border-teal-200 shadow-sm">
+                        <span className="text-sm font-semibold text-neutral-900 truncate max-w-[140px]">{cat.name || 'Unnamed'}</span>
+                        <span className="text-xl font-bold text-teal-700">{Math.round(cat.weight * 100)}%</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="justify-self-end flex items-center gap-2">
-                <button className="icon-btn" aria-label="Move up" title="Move up" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.max(0, cIdx - 1) })}>↑</button>
-                <button className="icon-btn" aria-label="Move down" title="Move down" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.min(rubric.categories.length - 1, cIdx + 1) })}>↓</button>
-                <button
-                className="icon-danger"
-                aria-label="Delete category"
-                title="Delete category"
-                onClick={async () => {
-                  const ok = await confirm({
-                    title: "Delete category",
-                    message: (
-                      <div>
-                        Are you sure you want to delete <strong>{c.name || "(unnamed)"}</strong>?
-                      </div>
-                    ),
-                    confirmText: "Delete",
-                    tone: "danger",
-                  });
-                  if (ok) dispatch({ type: "rubric/deleteCategory", id: c.id });
-                }}
-              >
-                ✕
-              </button>
-              </div>
             </div>
-            <div className="text-xs text-neutral-600">Scores from 0 to {c.max_points}, step 1</div>
+
+            {/* Category Cards */}
+            <div className="space-y-3">
+              {rubric.categories.map((c, cIdx) => (
+            <div key={c.id} className="rounded-xl border-2 border-neutral-200 bg-white hover:border-teal-300 transition-colors">
+              {/* Compact Header */}
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-neutral-50 to-white">
+                <div className="flex-1 min-w-0">
+                  <input
+                    className="w-full border-0 bg-transparent text-lg font-bold text-neutral-900 focus:outline-none focus:ring-0 px-0"
+                    value={c.name}
+                    onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { name: e.target.value } })}
+                    aria-label="Category name"
+                    placeholder="Category name"
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <div className="text-xs text-neutral-500 mb-1.5">Max Points</div>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      className="w-16 h-10 text-center rounded-lg border-2 border-neutral-300 px-2 text-base font-bold focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                      value={c.max_points}
+                      onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { max_points: clamp(Number(e.target.value), 0, 10) } })}
+                      aria-label="Max points"
+                    />
+                  </div>
+                  <div>
+                    <div className="text-xs text-neutral-500 mb-1.5">Weight</div>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="5"
+                        min={0}
+                        max={100}
+                        className="w-20 h-10 text-center rounded-lg border-2 border-teal-300 bg-teal-50 pl-3 pr-8 text-base font-bold text-teal-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 focus:bg-white"
+                        value={Math.round(c.weight * 100)}
+                        onChange={(e) => dispatch({ type: "rubric/updateCategory", id: c.id, update: { weight: clamp(Number(e.target.value) / 100, 0, 1) } })}
+                        aria-label="Weight percentage"
+                      />
+                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-base font-bold text-teal-700 pointer-events-none">%</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 border-l border-neutral-200 pl-3">
+                    <button className="icon-btn" aria-label="Move up" title="Move up" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.max(0, cIdx - 1) })}>↑</button>
+                    <button className="icon-btn" aria-label="Move down" title="Move down" onClick={() => dispatch({ type: "rubric/reorder", from: cIdx, to: Math.min(rubric.categories.length - 1, cIdx + 1) })}>↓</button>
+                    <button
+                      className="icon-danger"
+                      aria-label="Delete category"
+                      title="Delete category"
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: "Delete category",
+                          message: (
+                            <div>
+                              Are you sure you want to delete <strong>{c.name || "(unnamed)"}</strong>?
+                            </div>
+                          ),
+                          confirmText: "Delete",
+                          tone: "danger",
+                        });
+                        if (ok) dispatch({ type: "rubric/deleteCategory", id: c.id });
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </div>
 
             <div className="space-y-3">
               <div className="grid grid-cols-[160px_1fr_36px] items-center gap-3 text-xs text-neutral-500">
@@ -208,12 +310,26 @@ export function RubricBuilder() {
               </div>
             </div>
           </div>
-        ))}
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-3 space-y-2">
-        <h3 className="font-medium">Penalties</h3>
-        <p className="text-sm text-neutral-600">Optional. Used to deduct points for common errors (not belonging to any criteria). Use negative numbers for <em>points</em>. Example: code <code className="px-1 rounded bg-neutral-100">io_handling</code>, description <em>Missing input validation</em>, points <code className="px-1 rounded bg-neutral-100">-2</code>.</p>
+      {/* Step 2: Penalties Section */}
+      <div className="rounded-2xl border-2 border-neutral-200 bg-white p-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
+            2
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-neutral-900">Penalties (Optional)</h3>
+            <p className="text-sm text-neutral-600">Deduct points for common errors not covered by categories</p>
+          </div>
+          <div className="px-3 py-1.5 rounded-lg bg-neutral-100 text-neutral-600 text-sm font-semibold">
+            {rubric.penalties.length} {rubric.penalties.length === 1 ? 'penalty' : 'penalties'}
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-neutral-600">Quick add</label>
           <select className="rounded-lg border border-neutral-300 px-2 py-1 bg-white" aria-label="Add common penalty" onChange={(e) => {
@@ -263,9 +379,41 @@ export function RubricBuilder() {
         </div>
       </div>
 
-      <div className="flex gap-2 pt-2">
-        <button className="btn-secondary" onClick={() => dispatch({ type: "ui/setStep", step: 1 })}>← Back</button>
-        <button className="btn-primary" onClick={() => dispatch({ type: "ui/setStep", step: 3 })}>Next: Code →</button>
+      {/* Navigation */}
+      <div className="flex items-center justify-between pt-4">
+        <button className="btn-secondary flex items-center gap-2 px-6 py-3" onClick={() => dispatch({ type: "ui/setStep", step: 1 })}>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Question
+        </button>
+        <button 
+          className="btn-primary flex items-center gap-2 px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-shadow"
+          onClick={async () => {
+            if (rubric.categories.length === 0) {
+              await alertModal({ 
+                title: "Categories Required", 
+                message: "Please add at least one grading category before proceeding.", 
+                tone: "warning" 
+              });
+              return;
+            }
+            if (!isWeightValid) {
+              await alertModal({ 
+                title: "Invalid Weights", 
+                message: `Category weights must sum to 1.0 (100%). Current total: ${(totalWeight * 100).toFixed(0)}%`, 
+                tone: "warning" 
+              });
+              return;
+            }
+            dispatch({ type: "ui/setStep", step: 3 });
+          }}
+        >
+          Continue to Code Input
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
     </div>
   );

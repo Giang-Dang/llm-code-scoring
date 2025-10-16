@@ -1,10 +1,12 @@
 "use client";
 
 import { useAppState } from "@/state/appState";
+import { useAlert } from "./Alert";
 
 export function QuestionForm() {
   const { state, dispatch } = useAppState();
   const { question } = state;
+  const alertModal = useAlert();
 
   function useExample() {
     dispatch({
@@ -76,9 +78,17 @@ Both strings consist of lowercase English letters.`,
                 rows={12}
                 value={question.prompt}
                 onChange={(e) => dispatch({ type: "question/update", update: { prompt: e.target.value } })}
-                onKeyDown={(e) => {
+                onKeyDown={async (e) => {
                   if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                     e.preventDefault();
+                    if (!question.title.trim()) {
+                      await alertModal({ title: "Title Required", message: "Please enter an assignment title before proceeding.", tone: "warning" });
+                      return;
+                    }
+                    if (!question.prompt.trim()) {
+                      await alertModal({ title: "Problem Description Required", message: "Please enter a problem description before proceeding.", tone: "warning" });
+                      return;
+                    }
                     dispatch({ type: "ui/setStep", step: 2 });
                   }
                 }}
@@ -95,7 +105,17 @@ Both strings consist of lowercase English letters.`,
             <div className="text-sm text-neutral-600">Press <span className="font-semibold">Ctrl/⌘ + Enter</span> to continue</div>
             <div className="flex gap-2">
               <button className="btn-secondary" onClick={clearQuestion}>Reset</button>
-              <button className="btn-primary" onClick={() => dispatch({ type: "ui/setStep", step: 2 })}>Next: Rubric →</button>
+              <button className="btn-primary" onClick={async () => {
+                if (!question.title.trim()) {
+                  await alertModal({ title: "Title Required", message: "Please enter an assignment title before proceeding.", tone: "warning" });
+                  return;
+                }
+                if (!question.prompt.trim()) {
+                  await alertModal({ title: "Problem Description Required", message: "Please enter a problem description before proceeding.", tone: "warning" });
+                  return;
+                }
+                dispatch({ type: "ui/setStep", step: 2 });
+              }}>Next: Rubric →</button>
             </div>
           </div>
         </div>

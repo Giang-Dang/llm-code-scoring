@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAppState } from "@/state/appState";
 import { ApiClient } from "@/lib/apiClient";
 
@@ -9,9 +9,6 @@ export function Dashboard() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loadingIds, setLoadingIds] = useState<string[]>([]);
   const api = useMemo(() => new ApiClient(), []);
-  const abortRef = useRef<AbortController | null>(null);
-
-  const totalMax = state.rubric.categories.reduce((acc, c) => acc + (Number(c.max_points) || 0), 0);
 
   function toggleAll(e: React.ChangeEvent<HTMLInputElement>) {
     setSelectedIds(e.target.checked ? state.submissions.map((s) => s.id) : []);
@@ -39,7 +36,7 @@ export function Dashboard() {
       } as const;
 
       const res = await api.score({
-        llm_provider: state.ui.provider,
+        llm_provider: state.ui.model,
         problem_description: state.question.prompt || state.question.title,
         student_code: sub.code,
         programming_language: "cpp",
@@ -123,7 +120,6 @@ export function Dashboard() {
             <DashboardRow
               key={s.id}
               s={s}
-              rubricMax={totalMax}
               selected={selectedIds.includes(s.id)}
               onSelect={(v) => toggleOne(s.id, v)}
               onAdjust={(val) => {
@@ -156,9 +152,8 @@ type RowSubmission = {
   };
 };
 
-function DashboardRow({ s, rubricMax, selected, onSelect, onAdjust, onScore, loading }: {
+function DashboardRow({ s, selected, onSelect, onAdjust, onScore, loading }: {
   s: RowSubmission;
-  rubricMax: number;
   selected: boolean;
   onSelect: (checked: boolean) => void;
   onAdjust: (val: number) => void;

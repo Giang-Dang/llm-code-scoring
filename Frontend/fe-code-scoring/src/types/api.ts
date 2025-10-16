@@ -1,10 +1,9 @@
-export type LLMProvider =
-  | "openai"
-  | "gemini"
-  | "deepseek"
-  | "grok"
-  | "lmstudio"
-  | "ollama";
+export type LlmModelName =
+  | "gemini-2.5-pro"
+  | "gemini-2.5-flash"
+  | "gemini-2.5-flash-lite"
+  | "gemini-2.0-flash"
+  | "gemini-2.0-flash-lite";
 
 export type RubricBand = {
   min_score: number;
@@ -50,7 +49,7 @@ export type RubricRequest = {
 };
 
 export type ScoringRequest = {
-  llm_provider: LLMProvider;
+  llm_provider: LlmModelName;
   problem_description: string;
   student_code: string;
   programming_language: "cpp"; // backend currently supports only cpp
@@ -81,7 +80,7 @@ export type PenaltyApplied = {
 export type ScoringResponse = {
   category_results: CategoryResult[];
   penalties_applied: PenaltyApplied[];
-  provider_used: LLMProvider;
+  provider_used: LlmModelName;
   feedback?: string | null;
   total_score: number; // 0..10
 };
