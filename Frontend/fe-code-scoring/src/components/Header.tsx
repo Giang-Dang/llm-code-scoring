@@ -18,31 +18,23 @@ export function Header() {
           <div className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">RubricScore</div>
           <Stepper steps={steps} active={state.ui.step} onSelect={(id) => dispatch({ type: "ui/setStep", step: id as 1 | 2 | 3 | 4 })} />
         </div>
-        <div className="flex items-center gap-2 text-sm">
-          <label className="text-neutral-800">Provider</label>
-          <select
-            aria-label="Select LLM Provider"
-            className="rounded-lg border border-neutral-300 px-2 py-1 bg-white text-neutral-900"
-            value={state.ui.provider}
-            onChange={(e) => dispatch({ type: "ui/setProvider", provider: e.target.value as (typeof state.ui.provider) })}
-          >
-            <option value="gemini">Gemini</option>
-            <option value="lmstudio">LM Studio</option>
-            <option value="deepseek" hidden>DeepSeek</option>
-            <option value="openai" hidden>OpenAI</option>
-            <option value="grok" hidden>Grok</option>
-            <option value="ollama" hidden>Ollama</option>
-          </select>
-          <label className="text-neutral-800">Output Language</label>
-          <select
-            aria-label="Select output language"
-            className="rounded-lg border border-neutral-300 px-2 py-1 bg-white text-neutral-900"
-            value={state.ui.outputLanguage}
-            onChange={(e) => dispatch({ type: "ui/setOutputLanguage", value: e.target.value })}
-          >
-            <option>Vietnamese</option>
-            <option>English</option>
-          </select>
+        <div className="flex items-center gap-4 text-sm">
+          {/* <div className="hidden md:flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-1.5 text-neutral-700">
+            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Output</span>
+            <span className="font-medium text-neutral-900">{state.ui.outputLanguage}</span>
+          </div>
+          <div className="relative">
+            <select
+              aria-label="Change output language"
+              className="appearance-none rounded-full border border-neutral-200 bg-white py-1.5 pl-4 pr-8 text-neutral-900 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/60"
+              value={state.ui.outputLanguage}
+              onChange={(e) => dispatch({ type: "ui/setOutputLanguage", value: e.target.value })}
+            >
+              <option>Vietnamese</option>
+              <option>English</option>
+            </select>
+            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-neutral-500">▾</span>
+          </div> */}
         </div>
       </div>
     </header>

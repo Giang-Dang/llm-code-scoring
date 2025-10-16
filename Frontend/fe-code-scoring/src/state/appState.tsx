@@ -38,14 +38,26 @@ export type UIState = {
   outputLanguage: string; // e.g., Vietnamese, English
 };
 
+export type CodeInputState = {
+  activeTab: "single" | "batch";
+  singleSubmission: {
+    name: string;
+    language: string;
+    code: string;
+  };
+  batchLanguage: string;
+  uploadedFiles: Array<{ name: string; size: number; status: "pending" | "success" | "error" }>;
+};
+
 export type AppState = {
   question: Question;
   rubric: Rubric;
   submissions: Submission[];
   ui: UIState;
+  codeInput: CodeInputState;
 };
 
-type Action =
+export type Action =
   | { type: "ui/setStep"; step: UIState["step"] }
   | { type: "ui/setProvider"; provider: LLMProvider }
   | { type: "ui/setOutputLanguage"; value: string }
@@ -57,13 +69,23 @@ type Action =
   | { type: "rubric/deleteCategory"; id: string }
   | { type: "submissions/add"; submission: Submission }
   | { type: "submissions/update"; id: string; update: Partial<Submission> }
-  | { type: "submissions/set"; submissions: Submission[] };
+  | { type: "submissions/set"; submissions: Submission[] }
+  | { type: "codeInput/setTab"; tab: "single" | "batch" }
+  | { type: "codeInput/updateSingle"; update: Partial<CodeInputState["singleSubmission"]> }
+  | { type: "codeInput/setBatchLanguage"; language: string }
+  | { type: "codeInput/setUploadedFiles"; files: CodeInputState["uploadedFiles"] };
 
 const initialState: AppState = {
   question: { title: "", prompt: "", constraints: "", expectedFormat: "" },
   rubric: { categories: [], penalties: [] },
   submissions: [],
   ui: { step: 1, provider: "gemini", outputLanguage: "Vietnamese" },
+  codeInput: {
+    activeTab: "single",
+    singleSubmission: { name: "", language: "c++", code: "" },
+    batchLanguage: "c++",
+    uploadedFiles: [],
+  },
 };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -103,6 +125,14 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case "submissions/set":
       return { ...state, submissions: action.submissions };
+    case "codeInput/setTab":
+      return { ...state, codeInput: { ...state.codeInput, activeTab: action.tab } };
+    case "codeInput/updateSingle":
+      return { ...state, codeInput: { ...state.codeInput, singleSubmission: { ...state.codeInput.singleSubmission, ...action.update } } };
+    case "codeInput/setBatchLanguage":
+      return { ...state, codeInput: { ...state.codeInput, batchLanguage: action.language } };
+    case "codeInput/setUploadedFiles":
+      return { ...state, codeInput: { ...state.codeInput, uploadedFiles: action.files } };
     default:
       return state;
   }

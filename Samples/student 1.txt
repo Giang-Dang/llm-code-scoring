@@ -1,0 +1,25 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string date;
+    cin >> date;
+
+    // Extract year, month, and day from the input string
+    int year = stoi(date.substr(0, 4));
+    int month = stoi(date.substr(5, 2));
+    int day = stoi(date.substr(8, 2));
+
+    // Days in each month
+    int daysInMonth[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    // Calculate day of the year
+    int dayOfYear = 0;
+    for (int i = 0; i < month - 1; i++) {
+        dayOfYear += daysInMonth[i];
+    }
+    dayOfYear += day;
+
+    cout << dayOfYear << endl;
+}

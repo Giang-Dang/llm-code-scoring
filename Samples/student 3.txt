@@ -1,0 +1,22 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+int main() {
+    // Read the date input from the user
+    string dateInput;
+    cin >> dateInput;
+
+    // Extract year, month, and day as integers
+    int year = stoi(dateInput.substr(0, 4));
+    int month = stoi(dateInput.substr(5, 2));
+    int day = stoi(dateInput.substr(8, 2));
+
+    int dayNumber = month * day;
+
+    // Output the incorrectly calculated day number
+    cout << dayNumber << endl;
+
+    return 0;
+}

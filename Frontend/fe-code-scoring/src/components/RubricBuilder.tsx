@@ -98,7 +98,7 @@ export function RubricBuilder() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <button className="btn-secondary" onClick={applyVNSample}>Sample (VN: Correctness + Readability)</button>
+        <button className="btn-secondary" onClick={applyVNSample}>Sample (Correctness + Readability)</button>
         <button className="btn-secondary" onClick={addCategory}>+ Add Category</button>
       </div>
 

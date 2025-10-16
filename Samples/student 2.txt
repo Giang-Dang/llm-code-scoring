@@ -1,0 +1,36 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+bool leap(int yr) {
+    if (yr % 400 == 0) return true;
+    if (yr % 100 == 0) return false;
+    if (yr % 4 == 0) return true;
+    return false;
+}
+
+int calcDay(int y, int m, int d) {
+    vector<int> monthdays = {31,28,31,30,31,30,31,31,30,31,30,31};
+    if (leap(y)) {
+        monthdays[1] = 29;
+    }
+    int res = 0;
+    for (int i=0; i<m-1; i++) {
+        res += monthdays[i];
+    }
+    res += d;
+    return res;
+}
+
+int main() {
+    string dt;
+    cin >> dt;
+    int y = stoi(dt.substr(0,4));
+    int mon = stoi(dt.substr(5,2));
+    int dd = stoi(dt.substr(8,2));
+
+    int ans = calcDay(y, mon, dd);
+    cout << ans << endl;
+    return 0;
+}

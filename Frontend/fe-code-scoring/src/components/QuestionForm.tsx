@@ -10,8 +10,29 @@ export function QuestionForm() {
     dispatch({
       type: "question/update",
       update: {
-        title: "Euclid's GCD Function",
-        prompt: "Write a function gcd(a, b) that returns the greatest common divisor of two non-negative integers using Euclid's algorithm.",
+        title: "Valid anagram",
+        prompt: `Write a program in C++ that reads two strings from input and determines whether they are anagrams of each other. Two strings are anagrams if one can be formed by rearranging the letters of the other, using all the original letters exactly once. The program should output true if the second string is an anagram of the first, and false otherwise.
+
+Input: Two lines, each containing a string s and t.
+Output: A single word: true if t is an anagram of s, otherwise false.
+
+Example 1:
+Input:
+anagram
+nagaram
+Output:
+true
+
+Example 2:
+Input:
+rat
+car
+Output:
+false
+
+Constraints:
+1 <= s.length, t.length <= 5 * 10^2
+Both strings consist of lowercase English letters.`,
         constraints: "Inputs are 0 ≤ a,b ≤ 1e9. Prefer O(log min(a,b)).",
         expectedFormat: "Return an integer (the GCD)",
       },
