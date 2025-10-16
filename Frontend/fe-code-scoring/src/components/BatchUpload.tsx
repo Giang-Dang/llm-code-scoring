@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import type { Action } from "@/state/appState";
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
+import { cpp } from "@codemirror/lang-cpp";
 
 type BatchUploadProps = {
   batchLanguage: string;
-  uploadedFiles: Array<{ name: string; size: number; status: "pending" | "success" | "error" }>;
+  uploadedFiles: Array<{ name: string; size: number; status: "pending" | "success" | "error"; code?: string; submissionId?: string }>;
   onLanguageChange: (language: string) => void;
   onFilesUpload: (files: File[]) => Promise<void>;
   dispatch: React.Dispatch<Action>;
@@ -21,6 +25,34 @@ export function BatchUpload({
   alertModal,
 }: BatchUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [viewingFile, setViewingFile] = useState<{ name: string; code: string } | null>(null);
+
+  // Get language extensions for CodeMirror
+  const getLanguageExtensions = (language: string) => {
+    switch (language.toLowerCase()) {
+      case "python":
+        return [python()];
+      case "javascript":
+        return [javascript({ jsx: true, typescript: true })];
+      case "cpp":
+      case "c++":
+        return [cpp()];
+      default:
+        return [javascript({ jsx: true, typescript: true })];
+    }
+  };
+
+  // Remove file from uploaded list and its corresponding submission
+  const handleRemoveFile = (index: number) => {
+    const fileToRemove = uploadedFiles[index];
+    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    dispatch({ type: "codeInput/setUploadedFiles", files: newFiles });
+    
+    // Also remove the corresponding submission if it exists
+    if (fileToRemove.submissionId) {
+      dispatch({ type: "submissions/delete", id: fileToRemove.submissionId });
+    }
+  };
 
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
@@ -177,6 +209,33 @@ export function BatchUpload({
                 }`}>
                   {file.status === "success" ? "Success" : file.status === "error" ? "Failed" : "Processing"}
                 </div>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2">
+                  {file.status === "success" && file.code && (
+                    <button
+                      onClick={() => setViewingFile({ name: file.name, code: file.code! })}
+                      className="px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1.5"
+                      title="View code"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleRemoveFile(idx)}
+                    className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5"
+                    title="Remove file"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -204,6 +263,60 @@ export function BatchUpload({
           </svg>
         </button>
       </div>
+
+      {/* Code Viewer Modal */}
+      {viewingFile && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={() => setViewingFile(null)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white relative overflow-hidden">
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
+              </div>
+              
+              <div className="relative z-10 flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold mb-1">{viewingFile.name}</h3>
+                  <p className="text-slate-300 text-sm">Code Preview</p>
+                </div>
+                <button
+                  onClick={() => setViewingFile(null)}
+                  className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                  aria-label="Close modal"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="rounded-xl overflow-hidden border border-neutral-300 shadow-sm">
+                <CodeMirror
+                  value={viewingFile.code}
+                  extensions={getLanguageExtensions(batchLanguage)}
+                  editable={false}
+                  basicSetup={{
+                    lineNumbers: true,
+                    highlightActiveLineGutter: false,
+                    highlightActiveLine: false,
+                    foldGutter: true,
+                  }}
+                  style={{ fontSize: "14px" }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

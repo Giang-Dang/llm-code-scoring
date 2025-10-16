@@ -113,11 +113,15 @@ export function CodeInput() {
   }
 
   async function processTextFiles(files: File[]) {
-    const fileStatuses: Array<{ name: string; size: number; status: "pending" | "success" | "error" }> = 
+    const newFileStatuses: Array<{ name: string; size: number; status: "pending" | "success" | "error"; code?: string; submissionId?: string }> = 
       files.map((f) => ({ name: f.name, size: f.size, status: "pending" }));
-    dispatch({ type: "codeInput/setUploadedFiles", files: fileStatuses });
+    
+    // Append new files to existing ones
+    const allFiles = [...uploadedFiles, ...newFileStatuses];
+    dispatch({ type: "codeInput/setUploadedFiles", files: allFiles });
 
     let successCount = 0;
+    const startIndex = uploadedFiles.length;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -125,27 +129,37 @@ export function CodeInput() {
         const text = await file.text();
         const nameWithoutExt = file.name.replace(/\.txt$/, "");
         
-        addSubmission({ 
-          name: nameWithoutExt || "Student", 
-          language: batchLanguage, 
-          code: text 
+        const submissionId = generateId("sub");
+        const normalizedLanguage = batchLanguage === "auto" ? autoDetectLanguage(text) : batchLanguage;
+        const rubricScores = computeAutoScoresForCode(text, normalizedLanguage, state.rubric.categories);
+        const autoScore = sum(Object.values(rubricScores));
+        const manualAdjustment = 0;
+        const finalScore = autoScore + manualAdjustment;
+        
+        dispatch({
+          type: "submissions/add",
+          submission: { 
+            id: submissionId, 
+            name: nameWithoutExt || "Student", 
+            language: normalizedLanguage, 
+            code: text, 
+            rubricScores, 
+            autoScore, 
+            manualAdjustment, 
+            finalScore, 
+            comments: "" 
+          },
         });
         
-        fileStatuses[i].status = "success";
+        allFiles[startIndex + i].status = "success";
+        allFiles[startIndex + i].code = text; // Store code for viewing
+        allFiles[startIndex + i].submissionId = submissionId; // Track submission ID
         successCount++;
       } catch {
-        fileStatuses[i].status = "error";
+        allFiles[startIndex + i].status = "error";
       }
-      dispatch({ type: "codeInput/setUploadedFiles", files: [...fileStatuses] });
+      dispatch({ type: "codeInput/setUploadedFiles", files: [...allFiles] });
     }
-
-    setTimeout(async () => {
-      await alertModal({ 
-        title: "Upload Complete", 
-        message: `Successfully uploaded ${successCount} of ${files.length} files.`,
-        tone: successCount === files.length ? "success" : "warning"
-      });
-    }, 500);
   }
 
   return (
@@ -163,7 +177,19 @@ export function CodeInput() {
                 ? "text-teal-700 bg-white border-teal-500 border-b-white" 
                 : "text-neutral-500 bg-neutral-50 border-neutral-200 border-b-purple-500 hover:text-neutral-700 hover:bg-neutral-100"
             }`}
-            onClick={() => dispatch({ type: "codeInput/setTab", tab: "single" })}
+            onClick={() => {
+              dispatch({ type: "codeInput/setTab", tab: "single" });
+              // Clear batch data when switching to single
+              // Remove all submissions from batch uploads
+              uploadedFiles.forEach(file => {
+                if (file.submissionId) {
+                  dispatch({ type: "submissions/delete", id: file.submissionId });
+                }
+              });
+              dispatch({ type: "codeInput/setUploadedFiles", files: [] });
+              // Clear all submissions to start fresh
+              dispatch({ type: "submissions/set", submissions: [] });
+            }}
           >
             <span className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +208,13 @@ export function CodeInput() {
                 ? "text-purple-700 bg-white border-purple-500 border-b-white" 
                 : "text-neutral-500 bg-neutral-50 border-neutral-200 border-b-teal-500 hover:text-neutral-700 hover:bg-neutral-100"
             }`}
-            onClick={() => dispatch({ type: "codeInput/setTab", tab: "batch" })}
+            onClick={() => {
+              dispatch({ type: "codeInput/setTab", tab: "batch" });
+              // Clear single submission data when switching to batch
+              dispatch({ type: "codeInput/updateSingle", update: { name: "", code: "" } });
+              // Clear all submissions to start fresh
+              dispatch({ type: "submissions/set", submissions: [] });
+            }}
           >
             <span className="flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

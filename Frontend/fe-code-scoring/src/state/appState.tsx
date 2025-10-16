@@ -46,7 +46,7 @@ export type CodeInputState = {
     code: string;
   };
   batchLanguage: string;
-  uploadedFiles: Array<{ name: string; size: number; status: "pending" | "success" | "error" }>;
+  uploadedFiles: Array<{ name: string; size: number; status: "pending" | "success" | "error"; code?: string; submissionId?: string }>;
 };
 
 export type GradingResult = {
@@ -97,6 +97,7 @@ export type Action =
   | { type: "rubric/deleteCategory"; id: string }
   | { type: "submissions/add"; submission: Submission }
   | { type: "submissions/update"; id: string; update: Partial<Submission> }
+  | { type: "submissions/delete"; id: string }
   | { type: "submissions/set"; submissions: Submission[] }
   | { type: "codeInput/setTab"; tab: "single" | "batch" }
   | { type: "codeInput/updateSingle"; update: Partial<CodeInputState["singleSubmission"]> }
@@ -155,6 +156,12 @@ function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         submissions: state.submissions.map((s) => (s.id === action.id ? { ...s, ...action.update } : s)),
+      };
+    case "submissions/delete":
+      return {
+        ...state,
+        submissions: state.submissions.filter((s) => s.id !== action.id),
+        gradingResults: state.gradingResults.filter((r) => r.submissionId !== action.id),
       };
     case "submissions/set":
       return { ...state, submissions: action.submissions };
