@@ -23,7 +23,7 @@ class GeminiService(LLMBaseService):
         url = f"{self.base_url}/models/{self.model}:generateContent"
         logger.debug("Resolved endpoint URL: %s", url)
         return url
-        
+
     async def generate_response(self, request: ScoringRequest) -> ScoringResponse:
         logger.debug("generate_response: start for provider=%s", self.provider)
         self._validate_request(request)
@@ -35,14 +35,17 @@ class GeminiService(LLMBaseService):
 
         # Extract text from response
         raw_response = self._extract_raw_text(result)
-        logger.debug("Extracted raw LLM response; length=%d", len(raw_response) if raw_response else 0)
+        logger.debug("Extracted raw LLM response; length=%d",
+                     len(raw_response) if raw_response else 0)
 
         # Parse LLM response to structured payload
         llm_payload = self._parse_llm_response(raw_response)
-        logger.debug("Parsed LLM payload; categories=%d, penalties=%d", len(llm_payload.category_results) if hasattr(llm_payload, 'category_results') and llm_payload.category_results is not None else 0, len(llm_payload.penalties_applied) if hasattr(llm_payload, 'penalties_applied') and llm_payload.penalties_applied is not None else 0)
+        logger.debug("Parsed LLM payload; categories=%d, penalties=%d", len(llm_payload.category_results) if hasattr(llm_payload, 'category_results') and llm_payload.category_results is not None else 0, len(
+            llm_payload.penalties_applied) if hasattr(llm_payload, 'penalties_applied') and llm_payload.penalties_applied is not None else 0)
 
         # Calculate weighted scores and total
-        category_results, total_score = self._score_results(request, llm_payload)
+        category_results, total_score = self._score_results(
+            request, llm_payload)
 
         return self._build_scoring_response(
             llm_payload=llm_payload,
@@ -72,22 +75,27 @@ class GeminiService(LLMBaseService):
         url = self.endpoint_url
         headers = self._build_headers()
         payload = self._build_payload(prompt, model)
-        
+
         logger.info("Calling Gemini API at %s", url)
-        logger.debug("Request headers: %s", {k: v[:10] + "..." if k == "x-goog-api-key" and len(v) > 10 else v for k, v in headers.items()})
+        logger.info("Calling model: %s", model or self.model)
+        logger.debug("Request headers: %s", {
+                     k: v[:10] + "..." if k == "x-goog-api-key" and len(v) > 10 else v for k, v in headers.items()})
         logger.debug("Request payload: %s", payload)
-        
+
         async with httpx.AsyncClient(timeout=self.api_timeout) as client:
             response = await client.post(url, headers=headers, json=payload)
             response.raise_for_status()
             result = response.json()
-            
-        logger.debug("Received response from Gemini API; status=%d", response.status_code)
+
+        logger.debug("Received response from Gemini API; status=%d",
+                     response.status_code)
+        logger.debug("Response content: %s", result)
         return result
 
     def _extract_raw_text(self, result: dict[str, Any]) -> str:
         try:
             return result["candidates"][0]["content"]["parts"][0]["text"]
         except (KeyError, IndexError) as e:
-            logger.exception("Unexpected API response format when extracting text")
+            logger.exception(
+                "Unexpected API response format when extracting text")
             raise ValueError(f"Unexpected API response format: {e}")

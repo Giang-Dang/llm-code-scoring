@@ -9,12 +9,15 @@ FastAPI service that scores student code against a rubric using pluggable LLM pr
 ```bash
 # From the Backend/ directory
 python -m venv .venv
-.venv\\Scripts\\activate  # Windows PowerShell
+source .venv/bin/activate    # Linux / macOS
+# On Windows (PowerShell):
+# .venv\\Scripts\\Activate.ps1
 pip install -r requirements.txt
 
 # Create a .env with your settings (see Environment variables)
 # Then run the API
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug --env-file .env.development
 ```
 
 API will be available at `http://localhost:8000`.
@@ -29,6 +32,7 @@ API will be available at `http://localhost:8000`.
 The backend is configured via environment variables. Create a `.env` file in `Backend/` (or export env vars another way). The service loads `.env` via `python-dotenv`.
 
 Core generation controls:
+
 - `TEMPERATURE` (float, default `0.0`)
 - `TOP_P` (float, default `0.90`)
 - `TOP_K` (int, default `5`)
@@ -38,6 +42,7 @@ Core generation controls:
 - `LOG_LEVEL` (`CRITICAL|ERROR|WARNING|INFO|DEBUG`, default `INFO`)
 
 Provider endpoints, API keys, and models:
+
 - `OPENAI_URL` (default `https://api.openai.com/v1/chat/completions`)
 - `GEMINI_URL` (default `https://generativelanguage.googleapis.com/v1beta`)
 - `DEEPSEEK_URL` (default `https://api.deepseek.com/v1/chat/completions`)
@@ -60,6 +65,7 @@ Provider endpoints, API keys, and models:
 - `OLLAMA_MODEL` (e.g., `llama3.1`)
 
 Example `.env` (Gemini):
+
 ```env
 LOG_LEVEL=DEBUG
 TEMPERATURE=0.0
@@ -74,6 +80,7 @@ GEMINI_URL=https://generativelanguage.googleapis.com/v1beta
 ```
 
 LM Studio (local):
+
 ```env
 LMSTUDIO_URL=http://localhost:1234
 LMSTUDIO_MODEL=your-local-model
@@ -84,10 +91,13 @@ LMSTUDIO_MODEL=your-local-model
 ## Running
 
 - Development (auto-reload):
+
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
 - Production (example):
+
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
 ```
@@ -105,6 +115,7 @@ High-level docs live in `Backend/API.md`. Summary below.
 - Response: `ScoringResponse`
 
 ScoringRequest:
+
 ```json
 {
   "llm_provider": "gemini",
@@ -118,9 +129,17 @@ ScoringRequest:
         "max_points": 10,
         "weight": 0.7,
         "bands": [
-          { "min_score": 0,  "max_score": 4,  "description": "Fails common cases" },
-          { "min_score": 5,  "max_score": 8,  "description": "Mostly correct" },
-          { "min_score": 9,  "max_score": 10, "description": "Correct and robust" }
+          {
+            "min_score": 0,
+            "max_score": 4,
+            "description": "Fails common cases"
+          },
+          { "min_score": 5, "max_score": 8, "description": "Mostly correct" },
+          {
+            "min_score": 9,
+            "max_score": 10,
+            "description": "Correct and robust"
+          }
         ]
       },
       {
@@ -128,14 +147,22 @@ ScoringRequest:
         "max_points": 10,
         "weight": 0.3,
         "bands": [
-          { "min_score": 0,  "max_score": 4,  "description": "Hard to read" },
-          { "min_score": 5,  "max_score": 8,  "description": "Reasonably clear" },
-          { "min_score": 9,  "max_score": 10, "description": "Clear and idiomatic" }
+          { "min_score": 0, "max_score": 4, "description": "Hard to read" },
+          { "min_score": 5, "max_score": 8, "description": "Reasonably clear" },
+          {
+            "min_score": 9,
+            "max_score": 10,
+            "description": "Clear and idiomatic"
+          }
         ]
       }
     ],
     "penalties": [
-      { "code": "io_handling", "description": "Missing input validation", "points": -2 }
+      {
+        "code": "io_handling",
+        "description": "Missing input validation",
+        "points": -2
+      }
     ]
   },
   "language": "Vietnamese"
@@ -143,6 +170,7 @@ ScoringRequest:
 ```
 
 cURL:
+
 ```bash
 curl -X POST "http://localhost:8000/score" \
   -H "Content-Type: application/json" \
@@ -150,6 +178,7 @@ curl -X POST "http://localhost:8000/score" \
 ```
 
 Response (example):
+
 ```json
 {
   "category_results": [
@@ -186,6 +215,7 @@ Response (example):
 ```
 
 Notes:
+
 - The endpoint is mounted without a prefix; full path is `/score`.
 - `programming_language` currently supports only `"cpp"`.
 - The concrete LLM service is selected by `llm_provider`.
@@ -195,6 +225,7 @@ Notes:
 ## Providers
 
 Implemented:
+
 - Gemini: uses `x-goog-api-key` header and `models/{model}:generateContent` endpoint.
 - LM Studio: local server via REST Chat Completions. Normalizes typical LM Studio URLs to `/api/v0/chat/completions`.
 

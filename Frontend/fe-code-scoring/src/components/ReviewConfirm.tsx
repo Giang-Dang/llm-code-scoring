@@ -286,11 +286,13 @@ export function ReviewConfirm() {
               </div>
             ))
           )}
-          {/* {state.rubric.penalties.length > 0 && (
+          {state.rubric.penalties.length > 0 && (
             <div className="mt-3 pt-3 border-t border-neutral-200">
-              <div className="text-sm font-semibold text-neutral-700 mb-2">Penalties: {state.rubric.penalties.length}</div>
+              <div className="text-sm font-semibold text-neutral-700 mb-2">
+                Penalties: {state.rubric.penalties.length}
+              </div>
             </div>
-          )} */}
+          )}
         </div>
       </div>
 
