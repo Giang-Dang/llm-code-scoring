@@ -31,7 +31,7 @@ class GeminiService(LLMBaseService):
         prompt = self._build_prompt(request)
         logger.debug("Built prompt; length=%d chars", len(prompt))
 
-        result = await self._call_llm_api(prompt)
+        result = await self._call_llm_api(prompt, request.model)
 
         # Extract text from response
         raw_response = self._extract_raw_text(result)
