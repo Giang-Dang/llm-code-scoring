@@ -2,9 +2,12 @@
 
 An automated code grading system powered by Large Language Models (LLMs) for evaluating student programming assignments. The system provides a complete solution with a FastAPI backend and a modern Next.js frontend interface.
 
+![Application Home](Screenshot/llm-scoring-ui-01.png)
+
 ## Overview
 
 This project enables educators to:
+
 - Define programming questions with detailed rubrics
 - Submit student code for automated evaluation
 - Receive AI-generated scores and feedback
@@ -13,74 +16,17 @@ This project enables educators to:
 
 The system leverages state-of-the-art LLMs (Gemini, OpenAI, DeepSeek, Grok, LM Studio, Ollama) to provide consistent, detailed, and educational feedback on code submissions.
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Features](#features)
-  - [Rubric-Based Grading](#rubric-based-grading)
-  - [Multi-Language Support](#multi-language-support)
-  - [LLM Provider Support](#llm-provider-support)
-  - [Batch Processing](#batch-processing)
-  - [Results & Export](#results--export)
-- [Quick Start](#quick-start)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the Application](#running-the-application)
-- [Configuration](#configuration)
-  - [Backend Environment Variables](#backend-environment-variables)
-  - [Frontend Environment Variables](#frontend-environment-variables)
-- [API Documentation](#api-documentation)
-- [Project Structure](#project-structure)
-  - [Backend Structure](#backend-structure)
-  - [Frontend Structure](#frontend-structure)
-- [Workflow](#workflow)
-- [Development](#development)
-  - [Backend Development](#backend-development)
-  - [Frontend Development](#frontend-development)
-- [Testing](#testing)
-  - [Backend Tests](#backend-tests)
-  - [API Testing](#api-testing)
-- [Deployment](#deployment)
-  - [Backend Deployment](#backend-deployment)
-  - [Frontend Deployment](#frontend-deployment)
-- [Security Considerations](#security-considerations)
-- [Performance](#performance)
-- [Troubleshooting](#troubleshooting)
-- [Acknowledgments](#acknowledgments)
-
-## Architecture
-
-```
-llm-code-scoring/
-├── Backend/           # FastAPI backend service
-├── Frontend/          # Next.js web application
-│   └── fe-code-scoring/
-└── Samples/           # Sample data and examples
-```
-
-### Backend
-- **Framework**: FastAPI (Python 3.10+)
-- **LLM Integration**: Multiple provider support
-- **API**: RESTful endpoint for code scoring
-- **Logging**: Structured logging with rotation
-- **Validation**: Pydantic models for request/response
-
-### Frontend
-- **Framework**: Next.js 15 with App Router
-- **UI**: React 19 + TailwindCSS 4
-- **Features**: Multi-step workflow, batch processing, real-time results
-- **Code Editor**: CodeMirror with syntax highlighting
-
 ## Features
 
 ### Rubric-Based Grading
+
 - Define custom scoring categories with weights
 - Flexible score bands with descriptions
 - Support for penalty deductions
 - Automatic weight validation
 
 ### Multi-Language Support
+
 - Python
 - JavaScript/TypeScript
 - C++
@@ -88,6 +34,7 @@ llm-code-scoring/
 - Extensible for additional languages
 
 ### LLM Provider Support
+
 - **Google Gemini**: 2.0/2.5 Flash, Pro models
 - **OpenAI**: GPT-3.5, GPT-4 series
 - **DeepSeek**: DeepSeek models
@@ -96,27 +43,71 @@ llm-code-scoring/
 - **Ollama**: Local open-source models
 
 ### Batch Processing
+
 - Upload multiple submissions at once
 - Process files from TXT format
 - Real-time progress tracking
 - Concurrent grading with status updates
 
-### Results & Export
+### Results and Export
+
 - Detailed score breakdowns by category
 - AI-generated feedback and comments
 - Export to CSV or JSON
 - Individual submission review
 
+## Workflow
+
+The application follows a guided 6-step workflow to ensure accurate and consistent grading.
+
+### 1. Define Question
+
+Set up the programming problem with constraints and expected format.
+
+![Define Question](Screenshot/llm-scoring-ui-02.png)
+
+### 2. Define Rubric
+
+Build scoring categories with weights and score bands.
+
+![Define Rubric](Screenshot/llm-scoring-ui-05.png)
+
+### 3. Submit Code
+
+Upload student code (single or batch) for evaluation.
+
+![Submit Code](Screenshot/llm-scoring-ui-08.png)
+
+### 4. Grading Settings
+
+Select the AI model and configure output preferences.
+
+![Grading Settings](Screenshot/llm-scoring-ui-10.png)
+
+### 5. Review and Confirm
+
+Validate all settings before starting the grading process.
+
+![Review](Screenshot/llm-scoring-ui-11.png)
+
+### 6. Results
+
+View detailed scores, feedback, and export the data.
+
+![Results](Screenshot/llm-scoring-ui-14.png)
+
 ## Quick Start
 
 ### Prerequisites
 
-**Backend:**
+**Backend**
+
 - Python 3.10 or higher
 - Conda (recommended) or pip
 - API keys for chosen LLM provider(s)
 
-**Frontend:**
+**Frontend**
+
 - Node.js 20.x or higher
 - npm 10.x or higher
 
@@ -221,9 +212,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 Score a student's code submission against a rubric.
 
-**Endpoint:** `POST /score`
+**Endpoint**: `POST /score`
 
-**Request Body:**
+**Request Body**:
+
 ```json
 {
   "llm_provider": "gemini",
@@ -257,7 +249,8 @@ Score a student's code submission against a rubric.
 }
 ```
 
-**Response:**
+**Response**:
+
 ```json
 {
   "final_score": 8.5,
@@ -327,101 +320,6 @@ Frontend/fe-code-scoring/
 └── tsconfig.json
 ```
 
-## Workflow
-
-1. **Question Setup**: Define the programming problem with constraints and expected format
-2. **Rubric Creation**: Build scoring categories with weights and score bands
-3. **Code Submission**: Upload student code (single or batch)
-4. **Configuration**: Select AI model and output language
-5. **Review**: Validate all settings before grading
-6. **Grading**: Automated evaluation with real-time progress
-7. **Results**: View detailed scores, feedback, and export data
-
-## Development
-
-### Backend Development
-
-```bash
-# Install development dependencies
-pip install -r requirements.txt
-
-# Run tests
-pytest
-
-# Code formatting
-black app/
-ruff check app/
-
-# Type checking
-mypy app/
-```
-
-### Frontend Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run development server
-npm run dev
-
-# Lint code
-npm run lint
-
-# Build for production
-npm run build
-```
-
-## Testing
-
-### Backend Tests
-
-```bash
-cd Backend
-pytest tests/ -v
-```
-
-### API Testing
-
-Use the provided samples in `Samples/` directory or test with curl:
-
-```bash
-curl -X POST http://localhost:8000/score \
-  -H "Content-Type: application/json" \
-  -d @samples/sample_request.json
-```
-
-## Deployment
-
-### Backend Deployment
-
-**Docker:**
-```bash
-cd Backend
-docker build -t llm-code-scoring-backend .
-docker run -p 8000:8000 --env-file .env llm-code-scoring-backend
-```
-
-**Traditional:**
-```bash
-gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
-```
-
-### Frontend Deployment
-
-**Vercel (Recommended):**
-```bash
-cd Frontend/fe-code-scoring
-vercel deploy
-```
-
-**Docker:**
-```bash
-cd Frontend/fe-code-scoring
-docker build -t llm-code-scoring-frontend .
-docker run -p 3000:3000 llm-code-scoring-frontend
-```
-
 ## Security Considerations
 
 - Store API keys in environment variables, never in code
@@ -431,56 +329,9 @@ docker run -p 3000:3000 llm-code-scoring-frontend
 - Keep dependencies updated
 - Use secure CORS configuration
 
-## Performance
-
-- Backend supports concurrent request processing
-- Frontend implements optimistic UI updates
-- Batch processing with progress tracking
-- Efficient state management with React Context
-- Code splitting and lazy loading in Next.js
-
-## Troubleshooting
-
-### Common Issues
-
-**Backend won't start:**
-- Check Python version (3.10+)
-- Verify API keys in `.env`
-- Ensure all dependencies installed
-
-**Frontend can't connect to backend:**
-- Verify `NEXT_PUBLIC_API_URL` in `.env.local`
-- Check backend is running on correct port
-- Review CORS settings in backend
-
-**Grading fails:**
-- Verify API key is valid
-- Check LLM provider status
-- Review request payload format
-- Check backend logs in `Backend/logs/`
-
-### Code Style
-
-**Backend:**
-- Follow PEP 8
-- Use type hints
-- Write docstrings
-- Format with Black
-
-**Frontend:**
-- Use TypeScript strict mode
-- Follow React best practices
-- Use kebab-case for files
-- Use PascalCase for components
-
 ## Acknowledgments
 
 - Built with FastAPI and Next.js
 - Powered by Google Gemini, OpenAI, and other LLM providers
 - Uses CodeMirror for code editing
 - Styled with TailwindCSS
-
----
-
-**Version:** 0.1.0  
-**Last Updated:** October 2025
